@@ -1,0 +1,34 @@
+# 설계 문서
+찬양PPT_최종설계.md
+
+# Environment variables
+.env
+.env.local
+.env.*
+!.env.example
+
+# Python
+backend/venv/
+backend/__pycache__/
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Node.js
+frontend/node_modules/
+node_modules/
+frontend/.next/
+.next/
+frontend/tsconfig.tsbuildinfo
+
+# macOS
+.DS_Store
+**/.DS_Store
+
+# Claude
+.claude/
+
+# Misc
+*.log
