@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS lyrics (
     title_normalized TEXT NOT NULL,
     artist          TEXT,
     lyrics          TEXT NOT NULL,
-    source          TEXT NOT NULL CHECK (source IN ('manual', 'youtube')),
+    source          TEXT NOT NULL CHECK (source IN ('manual', 'tavily')),
     created_at      TIMESTAMPTZ DEFAULT now(),
     updated_at      TIMESTAMPTZ DEFAULT now()
 );
@@ -60,3 +60,12 @@ ALTER TABLE ppt_jobs ENABLE ROW LEVEL SECURITY;
 
 -- 백엔드(service_role)는 RLS 우회 → 별도 정책 불필요
 -- 프론트에서 직접 DB 접근하지 않음
+
+
+-- ============================================================
+-- 마이그레이션: youtube → tavily source 변경 (기존 DB에 실행)
+-- ============================================================
+-- ALTER TABLE lyrics DROP CONSTRAINT lyrics_source_check;
+-- ALTER TABLE lyrics ADD CONSTRAINT lyrics_source_check
+--   CHECK (source IN ('manual', 'tavily'));
+-- UPDATE lyrics SET source = 'tavily' WHERE source = 'youtube';

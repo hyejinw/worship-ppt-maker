@@ -1,24 +1,24 @@
 import os
-import asyncio
-import google.generativeai as genai
+from groq import Groq
 
-_model = None
+_client = None
 
 
-def _get_model():
-    global _model
-    if _model is None:
-        genai.configure(api_key=os.getenv("GOOGLE_GEMINI_API_KEY", ""))
-        _model = genai.GenerativeModel("gemini-2.5-flash-lite-preview-06-17")
-    return _model
+def _get_client():
+    global _client
+    if _client is None:
+        _client = Groq(api_key=os.getenv("GROQ_API_KEY", ""))
+    return _client
 
+
+MODEL = "llama-3.3-70b-versatile"
 
 SLIDE_SPLIT_PROMPT = """다음은 찬양곡 가사야.
 PPT 슬라이드 단위로 자연스럽게 구분해줘.
 
 규칙:
 - 의미 단위(절/후렴/브릿지)를 기준으로 구분
-- 슬라이드당 2~4줄
+- 슬라이드당 2~3줄(최대 4줄)
 - 한 줄이 너무 길면(20자 이상) 단독 슬라이드도 가능
 - 슬라이드 구분은 // 로 표시
 - 가사 내용은 절대 수정하지 말 것
@@ -29,32 +29,34 @@ PPT 슬라이드 단위로 자연스럽게 구분해줘.
 
 
 async def split_lyrics_to_slides(lyrics: str) -> list[dict]:
-    model = _get_model()
+    client = _get_client()
     prompt = SLIDE_SPLIT_PROMPT.format(lyrics=lyrics)
 
-    loop = asyncio.get_event_loop()
-    response = await loop.run_in_executor(
-        None, lambda: model.generate_content(prompt)
+    response = client.chat.completions.create(
+        model=MODEL,
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0.2,
     )
 
-    result = response.text.strip()
+    result = response.choices[0].message.content.strip()
     slides = [s.strip() for s in result.split("//") if s.strip()]
     return [{"order": i + 1, "lyrics": slide} for i, slide in enumerate(slides)]
 
 
 async def extract_image_keywords(lyrics: str) -> list[str]:
-    model = _get_model()
+    client = _get_client()
     prompt = f"""다음 찬양 가사에서 배경 이미지 검색에 적합한 영어 키워드 3개를 추출해줘.
 키워드만 쉼표로 구분해서 반환해줘. 예: light, worship, heaven
 
 가사:
 {lyrics[:300]}"""
 
-    loop = asyncio.get_event_loop()
-    response = await loop.run_in_executor(
-        None, lambda: model.generate_content(prompt)
+    response = client.chat.completions.create(
+        model=MODEL,
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0.3,
     )
 
-    raw = response.text.strip()
+    raw = response.choices[0].message.content.strip()
     keywords = [k.strip() for k in raw.split(",") if k.strip()]
     return keywords[:3]

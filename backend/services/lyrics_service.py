@@ -1,7 +1,23 @@
 import re
 import os
 import httpx
+import logging
+from datetime import datetime
+from pathlib import Path
 from .db import get_client
+
+logger = logging.getLogger(__name__)
+
+DEBUG_DIR = Path(__file__).parent.parent / "debug_logs"
+DEBUG_DIR.mkdir(exist_ok=True)
+
+
+def _write_debug(label: str, song_title: str, content: str) -> None:
+    ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+    safe_title = re.sub(r"[^\w가-힣]", "_", song_title)[:30]
+    path = DEBUG_DIR / f"{ts}_{label}_{safe_title}.txt"
+    path.write_text(content, encoding="utf-8")
+    logger.info("[DEBUG] %s 결과 저장 → %s", label, path)
 
 
 def normalize_title(title: str) -> str:
@@ -25,89 +41,70 @@ def search_db(title_normalized: str) -> dict | None:
     return None
 
 
-async def search_youtube(song_title: str) -> str | None:
-    api_key = os.getenv("YOUTUBE_DATA_API_KEY", "")
+async def search_tavily(song_title: str) -> str | None:
+    api_key = os.getenv("TAVILY_API_KEY", "")
     if not api_key:
         return None
 
-    async with httpx.AsyncClient(timeout=10) as client:
-        search_resp = await client.get(
-            "https://www.googleapis.com/youtube/v3/search",
-            params={
-                "part": "snippet",
-                "q": f"{song_title} 가사",
-                "type": "video",
-                "maxResults": 3,
-                "key": api_key,
+    async with httpx.AsyncClient(timeout=15) as client:
+        resp = await client.post(
+            "https://api.tavily.com/search",
+            json={
+                "api_key": api_key,
+                "query": f"{song_title} 찬양 가사",
+                "search_depth": "basic",
+                "include_raw_content": True,
+                "max_results": 3,
             },
         )
-        if search_resp.status_code != 200:
+        if resp.status_code != 200:
             return None
 
-        items = search_resp.json().get("items", [])
-        if not items:
-            return None
-
-        for item in items:
-            video_id = item["id"]["videoId"]
-            cap_resp = await client.get(
-                "https://www.googleapis.com/youtube/v3/captions",
-                params={"part": "snippet", "videoId": video_id, "key": api_key},
-            )
-            if cap_resp.status_code != 200:
-                continue
-
-            captions = cap_resp.json().get("items", [])
-            korean_caps = [
-                c for c in captions if c["snippet"]["language"] in ("ko", "ko-KR")
-            ]
-            if korean_caps:
-                # 자막이 존재하면 비디오 설명에서 가사 추출 시도
-                detail_resp = await client.get(
-                    "https://www.googleapis.com/youtube/v3/videos",
-                    params={
-                        "part": "snippet",
-                        "id": video_id,
-                        "key": api_key,
-                    },
-                )
-                if detail_resp.status_code == 200:
-                    videos = detail_resp.json().get("items", [])
-                    if videos:
-                        description = videos[0]["snippet"].get("description", "")
-                        lyrics = _extract_lyrics_from_description(description)
-                        if lyrics:
-                            return lyrics
+        results = resp.json().get("results", [])
+        for r in results:
+            content = r.get("raw_content") or r.get("content") or ""
+            if content and len(content) > 100:
+                _write_debug("tavily", song_title, f"URL: {r.get('url', '')}\n\n{content}")
+                return content
 
     return None
 
 
-def _extract_lyrics_from_description(description: str) -> str | None:
-    lines = description.split("\n")
-    lyric_lines = []
-    in_lyrics = False
+async def extract_lyrics_with_gemini(raw_text: str, song_title: str) -> str | None:
+    from groq import Groq
 
-    for line in lines:
-        stripped = line.strip()
-        if not stripped:
-            if in_lyrics and lyric_lines:
-                lyric_lines.append("")
-            continue
-
-        # URL, 해시태그, 특수 접두어 라인 스킵
-        if stripped.startswith(("http", "#", "©", "℗", "Produced", "Written", "Music", "Artist", "Album")):
-            continue
-
-        # 짧고 한글 비율 높은 라인만 가사로 판단
-        korean_ratio = len(re.findall(r"[가-힣]", stripped)) / max(len(stripped), 1)
-        if korean_ratio > 0.3 and len(stripped) < 50:
-            in_lyrics = True
-            lyric_lines.append(stripped)
-
-    if len(lyric_lines) < 4:
+    api_key = os.getenv("GROQ_API_KEY", "")
+    if not api_key:
         return None
 
-    return "\n".join(lyric_lines).strip()
+    client = Groq(api_key=api_key)
+
+    prompt = f"""다음은 웹 페이지에서 가져온 텍스트야. '{song_title}' 찬양곡의 가사만 추출해줘.
+
+규칙:
+- 광고, 메뉴, 저작권 문구, 관련 링크, 아티스트 소개 등은 모두 제거
+- 실제 가사 텍스트만 줄바꿈 유지해서 반환
+- 가사가 없으면 "NONE" 반환
+- 다른 설명 없이 가사만 반환
+
+텍스트:
+{raw_text[:3000]}"""
+
+    try:
+        response = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.1,
+        )
+        result = response.choices[0].message.content.strip()
+    except Exception as e:
+        logger.error("[Groq] 호출 실패: %s", e)
+        return None
+
+    _write_debug("groq", song_title, result)
+    if result == "NONE" or len(result) < 20:
+        return None
+    return result
 
 
 def save_lyrics(song_title: str, artist: str | None, lyrics: str, source: str) -> dict:

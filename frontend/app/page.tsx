@@ -39,7 +39,7 @@ export default function Home() {
         {/* 특징 */}
         <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-4 max-w-2xl w-full text-left">
           {[
-            { icon: "🎵", title: "자동 가사 수집", desc: "곡명만 입력하면 YouTube 자막에서 가사를 자동으로 가져옵니다." },
+            { icon: "🎵", title: "자동 가사 수집", desc: "곡명만 입력하면 웹에서 가사를 검색해 AI가 자동으로 추출합니다." },
             { icon: "✨", title: "AI 슬라이드 구분", desc: "Gemini AI가 의미 단위로 가사를 슬라이드에 자연스럽게 배분합니다." },
             { icon: "📊", title: "자유로운 커스터마이징", desc: "폰트, 배경, 텍스트 위치를 자유롭게 설정하고 즉시 다운로드합니다." },
           ].map((f) => (

@@ -1,14 +1,16 @@
 "use client";
-import { useRef, useState, useCallback } from "react";
+import { useRef, useState, useCallback, useEffect } from "react";
 import { PPTSettings } from "@/store/pptStore";
 
 interface SlidePreviewProps {
   lyrics: string;
+  songTitle?: string;
   settings: PPTSettings;
   onPositionChange: (x: number, y: number) => void;
+  fullscreen?: boolean;
 }
 
-const SNAP_POSITIONS = [20, 50, 75];
+const SNAP_POSITIONS = [30, 50, 70];
 const SNAP_THRESHOLD = 5;
 
 const GOOGLE_FONTS: Record<string, string> = {
@@ -18,12 +20,30 @@ const GOOGLE_FONTS: Record<string, string> = {
   NotoSansKR: "'Noto Sans KR', sans-serif",
 };
 
-export function SlidePreview({ lyrics, settings, onPositionChange }: SlidePreviewProps) {
+// 실제 PPT 슬라이드 너비 (Inches(13.33) = 960pt 기준)
+const PPT_WIDTH_PT = 13.33 * 72;
+
+export function SlidePreview({ lyrics, songTitle, settings, onPositionChange, fullscreen = false }: SlidePreviewProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [dragging, setDragging] = useState(false);
   const [snapY, setSnapY] = useState<number | null>(null);
+  const [containerWidth, setContainerWidth] = useState(0);
 
-  const { text_position, bg_type, bg_value, overlay_opacity, font_family, font_size } = settings;
+  const { text_position, bg_type, bg_value, overlay_opacity, font_family, font_size, font_color, show_title } = settings;
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => setContainerWidth(el.offsetWidth));
+    ro.observe(el);
+    setContainerWidth(el.offsetWidth);
+    return () => ro.disconnect();
+  }, []);
+
+  // 프리뷰 컨테이너 너비 기준으로 실제 PPT 비율에 맞게 폰트 크기 환산
+  const scaledFontSize = containerWidth > 0
+    ? Math.max(4, Math.round(font_size * (containerWidth / PPT_WIDTH_PT)))
+    : Math.round(font_size * 0.4);
 
   const handleMouseDown = useCallback(
     (e: React.MouseEvent) => {
@@ -70,13 +90,15 @@ export function SlidePreview({ lyrics, settings, onPositionChange }: SlidePrevie
     return { backgroundColor: "#000" };
   })();
 
-  const scaledFontSize = Math.max(8, Math.round(font_size * 0.4));
-
   return (
     <div
       ref={containerRef}
-      className="relative w-full select-none overflow-hidden rounded-lg border border-border"
-      style={{ aspectRatio: "16/9", cursor: dragging ? "grabbing" : "default", ...bgStyle }}
+      className={fullscreen ? "relative w-full h-full select-none overflow-hidden" : "relative w-full select-none overflow-hidden rounded-lg"}
+      style={{
+        ...(fullscreen ? {} : { aspectRatio: "16/9", boxShadow: "0 0 0 2px #555, 0 8px 32px rgba(0,0,0,0.7)" }),
+        cursor: dragging ? "grabbing" : "default",
+        ...bgStyle,
+      }}
     >
       {/* Google Fonts 로드 */}
       <link
@@ -131,7 +153,7 @@ export function SlidePreview({ lyrics, settings, onPositionChange }: SlidePrevie
           style={{
             fontFamily: GOOGLE_FONTS[font_family] || "sans-serif",
             fontSize: `${scaledFontSize}px`,
-            color: "white",
+            color: font_color || "#ffffff",
             textAlign: "center",
             whiteSpace: "pre-line",
             lineHeight: 1.5,
@@ -142,6 +164,27 @@ export function SlidePreview({ lyrics, settings, onPositionChange }: SlidePrevie
           {lyrics || "슬라이드 미리보기"}
         </p>
       </div>
+
+      {/* 하단 오른쪽 곡 제목 */}
+      {show_title && songTitle && (
+        <div
+          className="absolute pointer-events-none"
+          style={{ right: "2%", bottom: "3%", maxWidth: "40%" }}
+        >
+          <p
+            style={{
+              fontFamily: GOOGLE_FONTS[font_family] || "sans-serif",
+              fontSize: `${Math.max(8, Math.round(scaledFontSize / 3))}px`,
+              color: "rgba(200,200,200,0.9)",
+              textAlign: "right",
+              whiteSpace: "nowrap",
+              userSelect: "none",
+            }}
+          >
+            - {songTitle}
+          </p>
+        </div>
+      )}
     </div>
   );
 }

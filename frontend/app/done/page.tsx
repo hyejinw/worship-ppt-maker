@@ -23,7 +23,34 @@ function DoneContent() {
 
   const { jobStatus, downloadUrl, setJobStatus, settings, songs, reset } = usePPTStore();
   const [error, setError] = useState<string | null>(null);
+  const [downloading, setDownloading] = useState(false);
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const getFileName = () => {
+    const d = new Date();
+    const date = `${String(d.getFullYear()).slice(2)}${String(d.getMonth() + 1).padStart(2, "0")}${String(d.getDate()).padStart(2, "0")}`;
+    const ext = !settings.merge_songs && songs.length > 1 ? "zip" : "pptx";
+    return `${date}-찬양.${ext}`;
+  };
+
+  const handleDownload = async () => {
+    if (!downloadUrl) return;
+    setDownloading(true);
+    try {
+      const res = await fetch(downloadUrl);
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = getFileName();
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      window.open(downloadUrl, "_blank");
+    } finally {
+      setDownloading(false);
+    }
+  };
 
   useEffect(() => {
     if (!jobId) {
@@ -73,12 +100,12 @@ function DoneContent() {
         </p>
 
         <div className="flex flex-col gap-3 w-full max-w-xs">
-          <a href={downloadUrl} download="worship.pptx">
-            <Button size="lg" className="w-full gap-2">
-              <Download size={20} />
-              .pptx 다운로드
-            </Button>
-          </a>
+          <Button size="lg" className="w-full gap-2" onClick={handleDownload} disabled={downloading}>
+            {downloading
+              ? <><span className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin" />다운로드 중...</>
+              : <><Download size={20} />.pptx 다운로드</>
+            }
+          </Button>
           <p className="text-xs text-text-muted">다운로드 링크는 1시간 후 만료됩니다.</p>
         </div>
 

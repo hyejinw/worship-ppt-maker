@@ -17,6 +17,18 @@ def upload_pptx(job_id: str, data: bytes) -> str:
     return file_path
 
 
+def upload_zip(job_id: str, data: bytes) -> str:
+    db = get_client()
+    file_path = f"ppt/{job_id}.zip"
+
+    db.storage.from_(BUCKET).upload(
+        file_path,
+        data,
+        file_options={"content-type": "application/zip"},
+    )
+    return file_path
+
+
 def create_signed_url(file_path: str, expires_in: int = 3600) -> str:
     db = get_client()
     result = db.storage.from_(BUCKET).create_signed_url(file_path, expires_in)

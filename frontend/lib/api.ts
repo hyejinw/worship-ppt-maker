@@ -19,10 +19,10 @@ export const api = {
       body: JSON.stringify({ song_title, title_only }),
     }),
 
-  saveLyrics: (song_title: string, lyrics: string, artist?: string) =>
+  saveLyrics: (song_title: string, lyrics: string, artist?: string, source?: string) =>
     req<{ status: string; id: string }>("/api/lyrics/save", {
       method: "POST",
-      body: JSON.stringify({ song_title, lyrics, artist }),
+      body: JSON.stringify({ song_title, lyrics, artist, source: source ?? "manual" }),
     }),
 
   splitSlides: (lyrics: string) =>
@@ -60,10 +60,13 @@ export const api = {
   },
 
   generatePPT: (body: {
-    slides: { order: number; lyrics: string }[];
+    slides: { order: number; lyrics: string; song_id?: string }[];
     settings: object;
     session_id?: string;
     songs?: string[];
+    songs_data?: { id: string; title: string; lyrics?: string | null; artist?: string | null; source?: string | null; settings?: object | null }[];
+    merge_songs?: boolean;
+    export_song_id?: string | null;
   }) =>
     req<{ job_id: string }>("/api/ppt/generate", {
       method: "POST",

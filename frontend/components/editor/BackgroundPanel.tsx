@@ -4,10 +4,15 @@ import { PPTSettings } from "@/store/pptStore";
 import { api } from "@/lib/api";
 import { Upload, Search, Loader2 } from "lucide-react";
 import { clsx } from "clsx";
+import { ColorPicker } from "./ColorPicker";
 
 interface BackgroundPanelProps {
   settings: PPTSettings;
   onChange: (patch: Partial<PPTSettings>) => void;
+  uploadedUrl: string | null;
+  onUploadedUrlChange: (url: string) => void;
+  colorValue: string;
+  onColorChange: (hex: string) => void;
 }
 
 type BgTab = "black" | "color" | "upload" | "unsplash";
@@ -19,8 +24,21 @@ const TAB_LABELS: { key: BgTab; label: string }[] = [
   { key: "unsplash", label: "Unsplash" },
 ];
 
-export function BackgroundPanel({ settings, onChange }: BackgroundPanelProps) {
-  const [tab, setTab] = useState<BgTab>(settings.bg_type === "image" ? "upload" : settings.bg_type as BgTab || "black");
+export function BackgroundPanel({
+  settings,
+  onChange,
+  uploadedUrl,
+  onUploadedUrlChange,
+  colorValue,
+  onColorChange,
+}: BackgroundPanelProps) {
+  const [tab, setTab] = useState<BgTab>(() => {
+    if (settings.bg_type === "image") {
+      if (settings.bg_value?.includes("unsplash")) return "unsplash";
+      return "upload";
+    }
+    return (settings.bg_type as BgTab) || "black";
+  });
   const [unsplashQuery, setUnsplashQuery] = useState("");
   const [unsplashPhotos, setUnsplashPhotos] = useState<{ id: string; thumb: string; full: string; credit: string }[]>([]);
   const [unsplashLoading, setUnsplashLoading] = useState(false);
@@ -32,8 +50,17 @@ export function BackgroundPanel({ settings, onChange }: BackgroundPanelProps) {
     if (t === "black") {
       onChange({ bg_type: "black", bg_value: null });
     } else if (t === "color") {
-      onChange({ bg_type: "color", bg_value: settings.bg_value || "#1a1a40" });
+      onChange({ bg_type: "color", bg_value: colorValue });
+    } else if (t === "upload") {
+      if (uploadedUrl) {
+        onChange({ bg_type: "image", bg_value: uploadedUrl });
+      }
     }
+  };
+
+  const handleColorChange = (hex: string) => {
+    onColorChange(hex);
+    onChange({ bg_type: "color", bg_value: hex });
   };
 
   const handleUnsplashSearch = async () => {
@@ -52,9 +79,11 @@ export function BackgroundPanel({ settings, onChange }: BackgroundPanelProps) {
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    e.target.value = "";
     setUploadLoading(true);
     try {
       const result = await api.uploadImage(file);
+      onUploadedUrlChange(result.url);
       onChange({ bg_type: "image", bg_value: result.url });
     } catch (err: unknown) {
       alert(err instanceof Error ? err.message : "업로드 실패");
@@ -63,9 +92,10 @@ export function BackgroundPanel({ settings, onChange }: BackgroundPanelProps) {
     }
   };
 
+  const isUploadActive = settings.bg_type === "image" && settings.bg_value === uploadedUrl;
+
   return (
     <div>
-      {/* 탭 */}
       <div className="flex border border-border rounded-lg overflow-hidden mb-3">
         {TAB_LABELS.map((t) => (
           <button
@@ -83,27 +113,16 @@ export function BackgroundPanel({ settings, onChange }: BackgroundPanelProps) {
         ))}
       </div>
 
-      {/* 블랙 */}
       {tab === "black" && (
         <div className="h-12 rounded-lg bg-black border border-border flex items-center justify-center text-text-muted text-xs">
           #000000
         </div>
       )}
 
-      {/* 단색 */}
       {tab === "color" && (
-        <div className="flex items-center gap-3">
-          <input
-            type="color"
-            value={settings.bg_value || "#1a1a40"}
-            onChange={(e) => onChange({ bg_type: "color", bg_value: e.target.value })}
-            className="w-10 h-10 rounded-lg border border-border cursor-pointer"
-          />
-          <span className="text-sm text-text-muted">{settings.bg_value || "#1a1a40"}</span>
-        </div>
+        <ColorPicker value={colorValue} onChange={handleColorChange} />
       )}
 
-      {/* 업로드 */}
       {tab === "upload" && (
         <div>
           <input
@@ -113,28 +132,47 @@ export function BackgroundPanel({ settings, onChange }: BackgroundPanelProps) {
             className="hidden"
             onChange={handleFileUpload}
           />
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            disabled={uploadLoading}
-            className="w-full border border-dashed border-border rounded-lg py-6 flex flex-col items-center gap-2 text-text-muted hover:border-gold hover:text-gold transition-colors"
-          >
-            {uploadLoading ? (
-              <Loader2 size={20} className="animate-spin" />
-            ) : (
-              <Upload size={20} />
-            )}
-            <span className="text-xs">{uploadLoading ? "업로드 중..." : "이미지 선택 (JPG/PNG/WebP, 10MB 이하)"}</span>
-          </button>
-          {settings.bg_type === "image" && settings.bg_value && (
-            <div
-              className="mt-2 h-16 rounded-lg bg-cover bg-center border border-border"
-              style={{ backgroundImage: `url(${settings.bg_value})` }}
-            />
+          {uploadedUrl ? (
+            <div className="flex flex-col gap-2">
+              <div
+                className={clsx(
+                  "h-24 rounded-lg bg-cover bg-center border-2 transition-colors",
+                  isUploadActive ? "border-gold" : "border-border"
+                )}
+                style={{ backgroundImage: `url(${uploadedUrl})` }}
+              />
+              <div className="flex gap-2">
+                {!isUploadActive && (
+                  <button
+                    onClick={() => onChange({ bg_type: "image", bg_value: uploadedUrl })}
+                    className="flex-1 py-1.5 text-xs border border-gold text-gold rounded-lg hover:bg-gold/10 transition-colors"
+                  >
+                    이 이미지 사용
+                  </button>
+                )}
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploadLoading}
+                  className="flex-1 py-1.5 text-xs border border-border text-text-muted rounded-lg hover:border-[#555] transition-colors flex items-center justify-center gap-1"
+                >
+                  {uploadLoading ? <Loader2 size={12} className="animate-spin" /> : <Upload size={12} />}
+                  {uploadLoading ? "업로드 중..." : "교체"}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploadLoading}
+              className="w-full border border-dashed border-border rounded-lg py-6 flex flex-col items-center gap-2 text-text-muted hover:border-gold hover:text-gold transition-colors"
+            >
+              {uploadLoading ? <Loader2 size={20} className="animate-spin" /> : <Upload size={20} />}
+              <span className="text-xs">{uploadLoading ? "업로드 중..." : "이미지 선택 (JPG/PNG/WebP, 10MB 이하)"}</span>
+            </button>
           )}
         </div>
       )}
 
-      {/* Unsplash */}
       {tab === "unsplash" && (
         <div>
           <div className="flex gap-2 mb-3">

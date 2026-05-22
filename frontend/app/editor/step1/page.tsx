@@ -61,7 +61,7 @@ export default function Step1() {
       const searchQuery = artistTrimmed ? `${title} ${artistTrimmed}` : title;
       const result = await api.searchLyrics(searchQuery, title);
       if (result.status === "found" && result.lyrics) {
-        setSongLyrics(song.id, result.lyrics, (result.source as "manual" | "youtube") ?? "db");
+        setSongLyrics(song.id, result.lyrics, (result.source as "manual" | "tavily") ?? "db");
       } else {
         setSongError(song.id, true);
       }
@@ -87,7 +87,7 @@ export default function Step1() {
     reorderSongs(reordered.map((s) => s.id));
   };
 
-  const canProceed = songs.length > 0 && songs.every((s) => s.lyrics && !s.loading);
+  const canProceed = songs.length > 0 && songs.every((s) => !s.loading) && songs.some((s) => s.lyrics || s.error);
 
   const handleNext = () => {
     if (!canProceed) return;
