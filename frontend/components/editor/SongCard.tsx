@@ -3,7 +3,6 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { Song } from "@/store/pptStore";
 import { GripVertical, X, Loader2, CheckCircle, AlertCircle } from "lucide-react";
-import { clsx } from "clsx";
 
 interface SongCardProps {
   song: Song;
@@ -21,9 +20,9 @@ export function SongCard({ song, onRemove }: SongCardProps) {
   };
 
   const statusIcon = () => {
-    if (song.loading) return <Loader2 size={13} className="animate-spin text-accent" />;
-    if (song.error) return <AlertCircle size={13} className="text-error" />;
-    if (song.lyrics) return <CheckCircle size={13} className="text-success" />;
+    if (song.loading) return <Loader2 size={13} className="animate-spin" style={{ color: "#2E5E3E" }} />;
+    if (song.error) return <AlertCircle size={13} style={{ color: "#dc2626" }} />;
+    if (song.lyrics) return <CheckCircle size={13} style={{ color: "#2E5E3E" }} />;
     return null;
   };
 
@@ -38,27 +37,41 @@ export function SongCard({ song, onRemove }: SongCardProps) {
   };
 
   return (
-    <div ref={setNodeRef} style={style} className="bg-card border border-border rounded-xl hover:border-[#2a2a2a] transition-colors">
-      <div className="flex items-center gap-3 px-4 py-3">
+    <div
+      ref={setNodeRef}
+      style={{
+        ...style,
+        background: "white",
+        border: "1px solid #D8EBD0",
+        borderRadius: "14px",
+        transition: "box-shadow 0.15s",
+      }}
+      className="hover:shadow-sm"
+    >
+      <div className="flex items-center gap-3 px-4 py-3.5">
         <button
           {...attributes}
           {...listeners}
-          className="text-[#333] hover:text-text-muted cursor-grab active:cursor-grabbing flex-shrink-0"
+          className="cursor-grab active:cursor-grabbing flex-shrink-0"
+          style={{ color: "#86C59A" }}
         >
           <GripVertical size={18} />
         </button>
 
         <div className="flex-1 min-w-0">
-          <p className="font-medium truncate">
+          <p className="font-semibold truncate" style={{ color: "#1a3824", fontSize: "0.9rem" }}>
             {song.title}
             {song.artist && (
-              <span className="text-text-muted font-normal ml-1.5 text-sm">· {song.artist}</span>
+              <span style={{ color: "#5BAA72", fontWeight: 400, fontSize: "0.8rem" }} className="ml-1.5">
+                · {song.artist}
+              </span>
             )}
           </p>
           {statusText() && (
-            <p className={clsx("text-xs mt-0.5 flex items-center gap-1",
-              song.error ? "text-error" : "text-text-muted"
-            )}>
+            <p
+              className="text-xs mt-0.5 flex items-center gap-1"
+              style={{ color: song.error ? "#dc2626" : "#5BAA72" }}
+            >
               {statusIcon()}
               {statusText()}
             </p>
@@ -67,7 +80,10 @@ export function SongCard({ song, onRemove }: SongCardProps) {
 
         <button
           onClick={onRemove}
-          className="text-[#333] hover:text-error p-1 rounded transition-colors flex-shrink-0"
+          className="p-1.5 rounded-lg flex-shrink-0 transition-colors hover:bg-red-50"
+          style={{ color: "#86C59A" }}
+          onMouseEnter={(e) => (e.currentTarget.style.color = "#dc2626")}
+          onMouseLeave={(e) => (e.currentTarget.style.color = "#86C59A")}
         >
           <X size={15} />
         </button>

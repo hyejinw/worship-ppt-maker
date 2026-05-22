@@ -17,7 +17,6 @@ import {
   arrayMove,
 } from "@dnd-kit/sortable";
 import { Header } from "@/components/ui/Header";
-import { Button } from "@/components/ui/Button";
 import { SongCard } from "@/components/editor/SongCard";
 import { usePPTStore } from "@/store/pptStore";
 import { api } from "@/lib/api";
@@ -88,114 +87,147 @@ export default function Step1() {
 
   const canProceed = songs.length > 0 && songs.every((s) => !s.loading) && songs.some((s) => s.lyrics || s.error);
 
-  const handleNext = () => {
-    if (!canProceed) return;
-    router.push("/editor/step2");
-  };
-
   return (
-    <div className="min-h-screen flex flex-col bg-bg">
+    <div className="min-h-screen flex flex-col" style={{ background: "#F2F7F0" }}>
       <Header step={1} />
 
-      <main className="flex-1 max-w-2xl mx-auto w-full px-4 py-10">
-        <h2 className="text-xl font-bold text-text-primary mb-1">곡 선택</h2>
-        <p className="text-text-muted text-sm mb-7">
-          찬양 곡명을 검색해서 추가하세요. 최대 10곡까지 가능합니다.
-        </p>
+      <main className="flex-1 flex flex-col items-center px-4 py-10 sm:py-14">
+        <div className="w-full max-w-xl">
 
-        {/* 검색창 */}
-        <div className="flex flex-col gap-2 mb-6">
-          <div className="flex gap-2">
-            <div className="relative flex-1">
-              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
-              <input
-                ref={inputRef}
-                type="text"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                onKeyDown={handleKeyDown}
-                onKeyUp={handleKeyUp}
-                placeholder="곡명 (예: 베드로의 고백)"
-                className="w-full bg-card border border-border rounded-lg pl-9 pr-4 py-2.5 text-sm text-text-primary placeholder:text-text-muted focus:border-accent transition-colors"
-                disabled={songs.length >= 10}
-              />
-            </div>
-            <Button
-              onClick={handleAddSong}
-              disabled={!query.trim() || songs.length >= 10}
-              size="md"
-              className="shrink-0"
-            >
-              <Plus size={16} />
-              <span className="hidden sm:inline">추가</span>
-            </Button>
+          {/* Page title */}
+          <div className="mb-8">
+            <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight mb-1.5" style={{ color: "#1a3824" }}>
+              곡 선택
+            </h2>
+            <p className="text-sm" style={{ color: "#5BAA72" }}>
+              곡명을 검색해서 추가하세요. 아티스트를 함께 입력하면 더 정확하게 찾을 수 있어요.
+            </p>
           </div>
-          <input
-            type="text"
-            value={artist}
-            onChange={(e) => setArtist(e.target.value)}
-            onKeyDown={handleKeyDown}
-            onKeyUp={handleKeyUp}
-            placeholder="아티스트 (선택)"
-            className="w-full sm:w-48 bg-card border border-border rounded-lg px-3 py-2.5 text-sm text-text-primary placeholder:text-text-muted focus:border-accent transition-colors"
-            disabled={songs.length >= 10}
-          />
-        </div>
 
-        {/* 곡 목록 */}
-        {songs.length === 0 ? (
-          <div className="text-center py-20 text-text-muted">
-            <Music size={40} className="mx-auto mb-3 opacity-20" />
-            <p className="text-sm">곡을 추가해주세요.</p>
-          </div>
-        ) : (
-          <DndContext
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            onDragEnd={handleDragEnd}
+          {/* Search box */}
+          <div
+            className="rounded-2xl p-5 mb-6"
+            style={{ background: "white", border: "1px solid #D8EBD0", boxShadow: "0 2px 16px rgba(46,94,62,0.06)" }}
           >
-            <SortableContext items={songs.map((s) => s.id)} strategy={verticalListSortingStrategy}>
-              <div className="flex flex-col gap-2">
-                {songs.map((song) => (
-                  <SongCard
-                    key={song.id}
-                    song={song}
-                    onRemove={() => removeSong(song.id)}
-                  />
-                ))}
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: "#86C59A" }}>곡 검색</p>
+              <p className="text-xs" style={{ color: "#86C59A" }}>최대 10곡</p>
+            </div>
+            <div className="flex gap-2 mb-3">
+              <div className="relative flex-1">
+                <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: "#86C59A" }} />
+                <input
+                  ref={inputRef}
+                  type="text"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  onKeyUp={handleKeyUp}
+                  placeholder="곡명 (예: 베드로의 고백)"
+                  disabled={songs.length >= 10}
+                  className="w-full rounded-xl pl-9 pr-4 py-2.5 text-sm transition-colors"
+                  style={{
+                    background: "#F2F7F0",
+                    border: "1px solid #D8EBD0",
+                    color: "#1a3824",
+                    outline: "none",
+                  }}
+                  onFocus={(e) => (e.currentTarget.style.borderColor = "#2E5E3E")}
+                  onBlur={(e) => (e.currentTarget.style.borderColor = "#D8EBD0")}
+                />
               </div>
-            </SortableContext>
-          </DndContext>
-        )}
+              <button
+                onClick={handleAddSong}
+                disabled={!query.trim() || songs.length >= 10}
+                className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-semibold text-white transition-all shrink-0 disabled:opacity-40"
+                style={{ background: "#2E5E3E" }}
+              >
+                <Plus size={15} strokeWidth={2.5} />
+                <span className="hidden sm:inline">추가</span>
+              </button>
+            </div>
+            <input
+              type="text"
+              value={artist}
+              onChange={(e) => setArtist(e.target.value)}
+              onKeyDown={handleKeyDown}
+              onKeyUp={handleKeyUp}
+              placeholder="아티스트 (선택)"
+              disabled={songs.length >= 10}
+              className="w-full sm:w-52 rounded-xl px-3 py-2 text-sm transition-colors"
+              style={{
+                background: "#F2F7F0",
+                border: "1px solid #D8EBD0",
+                color: "#1a3824",
+                outline: "none",
+              }}
+              onFocus={(e) => (e.currentTarget.style.borderColor = "#2E5E3E")}
+              onBlur={(e) => (e.currentTarget.style.borderColor = "#D8EBD0")}
+            />
+          </div>
 
-        {songs.length > 0 && (
-          <p className="text-xs text-text-muted mt-3">
-            {songs.length}/10곡 추가됨
-          </p>
-        )}
+          {/* Song list */}
+          {songs.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-20 rounded-2xl"
+              style={{ border: "1.5px dashed #9ABFAA" }}>
+              <Music size={36} style={{ color: "#9ABFAA" }} className="mb-3" />
+              <p className="text-sm font-medium" style={{ color: "#2E5E3E" }}>곡을 추가해주세요</p>
+              <p className="text-xs mt-1" style={{ color: "#5BAA72" }}>위 검색창에서 곡명을 입력하세요</p>
+            </div>
+          ) : (
+            <>
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: "#86C59A" }}>
+                  추가된 곡
+                </p>
+                <p className="text-xs" style={{ color: "#86C59A" }}>
+                  {songs.length} / 10
+                </p>
+              </div>
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEnd}
+              >
+                <SortableContext items={songs.map((s) => s.id)} strategy={verticalListSortingStrategy}>
+                  <div className="flex flex-col gap-2">
+                    {songs.map((song) => (
+                      <SongCard
+                        key={song.id}
+                        song={song}
+                        onRemove={() => removeSong(song.id)}
+                      />
+                    ))}
+                  </div>
+                </SortableContext>
+              </DndContext>
+            </>
+          )}
+        </div>
       </main>
 
-      {/* 하단 버튼 */}
-      <div className="border-t border-border bg-bg-sub px-4 sm:px-6 py-4 flex items-center justify-between gap-4">
-        <div className="hidden md:flex flex-1" />
-        <div className="hidden md:block flex-1 text-center">
-          <p className="text-sm text-text-muted/50 italic leading-relaxed">
-            &ldquo;할렐루야 우리 하나님을 찬양하는 일이 선함이여<br />
-            찬송하는 일이 아름답고 마땅하도다&rdquo;
-          </p>
-          <p className="mt-1 text-xs text-text-muted/35 tracking-wide">시편 147:1</p>
-        </div>
-        <div className="flex-1 flex justify-end">
-          <Button
-            size="lg"
-            onClick={handleNext}
-            disabled={!canProceed}
-            className="gap-2"
-          >
-            다음 단계
-            <ArrowRight size={18} />
-          </Button>
-        </div>
+      {/* Bottom bar */}
+      <div
+        className="px-6 sm:px-10 py-4 flex items-center justify-between gap-4"
+        style={{ borderTop: "1px solid #D8EBD0", background: "white" }}
+      >
+        <p className="hidden md:block text-sm italic leading-relaxed" style={{ color: "#4a4a4a" }}>
+          &ldquo;호흡이 있는 자마다 여호와를 찬양할지어다 할렐루야&rdquo;
+          <span className="ml-2 text-xs not-italic" style={{ opacity: 0.6 }}>시편 150:6</span>
+        </p>
+
+        <button
+          onClick={() => canProceed && router.push("/editor/step2")}
+          disabled={!canProceed}
+          className="ml-auto inline-flex items-center gap-2 px-7 py-3 rounded-xl font-semibold text-sm text-white transition-all disabled:opacity-40"
+          style={{
+            background: "#2E5E3E",
+            boxShadow: canProceed ? "0 4px 16px rgba(46,94,62,0.2)" : "none",
+          }}
+        >
+          다음 단계
+          <ArrowRight size={16} />
+        </button>
       </div>
     </div>
   );

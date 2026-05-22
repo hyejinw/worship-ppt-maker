@@ -16,24 +16,38 @@ export function StepIndicator({ current }: { current: 1 | 2 | 3 }) {
               <div
                 className={clsx(
                   "w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold transition-all",
-                  isActive && "bg-accent text-white shadow-sm",
-                  isDone && "bg-accent/20 text-accent border border-accent/40",
-                  !isActive && !isDone && "bg-card border border-border text-text-muted"
+                  isActive && "text-white",
+                  isDone && "border",
+                  !isActive && !isDone && "border"
                 )}
+                style={
+                  isActive
+                    ? { background: "#2E5E3E" }
+                    : isDone
+                    ? { background: "rgba(46,94,62,0.12)", color: "#2E5E3E", borderColor: "rgba(46,94,62,0.3)" }
+                    : { background: "white", color: "#86a88e", borderColor: "#D8EBD0" }
+                }
               >
                 {isDone ? <Check size={12} strokeWidth={3} /> : step}
               </div>
               <span
-                className={clsx(
-                  "text-sm hidden sm:block",
-                  isActive ? "text-text-primary font-medium" : isDone ? "text-accent/70" : "text-text-muted"
-                )}
+                className={clsx("text-sm hidden sm:block")}
+                style={
+                  isActive
+                    ? { color: "#1a3824", fontWeight: 600 }
+                    : isDone
+                    ? { color: "#5BAA72" }
+                    : { color: "#86a88e" }
+                }
               >
                 {label}
               </span>
             </div>
             {i < STEPS.length - 1 && (
-              <div className={clsx("w-8 h-px mx-2", isDone ? "bg-accent/30" : "bg-border")} />
+              <div
+                className="w-8 h-px mx-2"
+                style={{ background: isDone ? "rgba(91,170,114,0.4)" : "#D8EBD0" }}
+              />
             )}
           </div>
         );
