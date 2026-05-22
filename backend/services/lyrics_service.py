@@ -70,7 +70,7 @@ async def search_tavily(song_title: str) -> str | None:
     return None
 
 
-async def extract_lyrics_with_gemini(raw_text: str, song_title: str) -> str | None:
+async def extract_lyrics_with_llm(raw_text: str, song_title: str) -> str | None:
     from groq import Groq
 
     api_key = os.getenv("GROQ_API_KEY", "")

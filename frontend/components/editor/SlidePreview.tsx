@@ -95,7 +95,7 @@ export function SlidePreview({ lyrics, songTitle, settings, onPositionChange, fu
       ref={containerRef}
       className={fullscreen ? "relative w-full h-full select-none overflow-hidden" : "relative w-full select-none overflow-hidden rounded-lg"}
       style={{
-        ...(fullscreen ? {} : { aspectRatio: "16/9", boxShadow: "0 0 0 2px #555, 0 8px 32px rgba(0,0,0,0.7)" }),
+        ...(fullscreen ? {} : { aspectRatio: "16/9", boxShadow: "0 0 0 1px #1e1e1e, 0 16px 48px rgba(0,0,0,0.9)" }),
         cursor: dragging ? "grabbing" : "default",
         ...bgStyle,
       }}

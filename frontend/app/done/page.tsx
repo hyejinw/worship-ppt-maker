@@ -102,7 +102,7 @@ function DoneContent() {
         <div className="flex flex-col gap-3 w-full max-w-xs">
           <Button size="lg" className="w-full gap-2" onClick={handleDownload} disabled={downloading}>
             {downloading
-              ? <><span className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin" />다운로드 중...</>
+              ? <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />다운로드 중...</>
               : <><Download size={20} />.pptx 다운로드</>
             }
           </Button>
@@ -160,7 +160,7 @@ function DoneContent() {
     <div className="min-h-screen flex flex-col items-center justify-center px-4 text-center">
       <Logo size={56} />
       <div className="mt-8 mb-4">
-        <Loader2 size={40} className="animate-spin text-gold mx-auto" />
+        <Loader2 size={40} className="animate-spin text-accent mx-auto" />
       </div>
       <h1 className="text-2xl font-bold text-text-primary mb-2">PPT 생성 중...</h1>
       <p className="text-text-muted text-sm">잠시만 기다려주세요.</p>
@@ -168,7 +168,7 @@ function DoneContent() {
         {[0, 1, 2].map((i) => (
           <div
             key={i}
-            className="w-2 h-2 rounded-full bg-gold animate-bounce"
+            className="w-2 h-2 rounded-full bg-accent animate-bounce"
             style={{ animationDelay: `${i * 0.15}s` }}
           />
         ))}

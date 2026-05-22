@@ -21,9 +21,9 @@ export function SongCard({ song, onRemove }: SongCardProps) {
   };
 
   const statusIcon = () => {
-    if (song.loading) return <Loader2 size={14} className="animate-spin text-gold" />;
-    if (song.error) return <AlertCircle size={14} className="text-error" />;
-    if (song.lyrics) return <CheckCircle size={14} className="text-success" />;
+    if (song.loading) return <Loader2 size={13} className="animate-spin text-accent" />;
+    if (song.error) return <AlertCircle size={13} className="text-error" />;
+    if (song.lyrics) return <CheckCircle size={13} className="text-success" />;
     return null;
   };
 
@@ -38,18 +38,18 @@ export function SongCard({ song, onRemove }: SongCardProps) {
   };
 
   return (
-    <div ref={setNodeRef} style={style} className="bg-card border border-border rounded-xl">
+    <div ref={setNodeRef} style={style} className="bg-card border border-border rounded-xl hover:border-[#2a2a2a] transition-colors">
       <div className="flex items-center gap-3 px-4 py-3">
         <button
           {...attributes}
           {...listeners}
-          className="text-text-muted hover:text-text-primary cursor-grab active:cursor-grabbing flex-shrink-0"
+          className="text-[#333] hover:text-text-muted cursor-grab active:cursor-grabbing flex-shrink-0"
         >
           <GripVertical size={18} />
         </button>
 
         <div className="flex-1 min-w-0">
-          <p className="font-medium text-text-primary truncate">
+          <p className="font-medium truncate">
             {song.title}
             {song.artist && (
               <span className="text-text-muted font-normal ml-1.5 text-sm">· {song.artist}</span>
@@ -67,9 +67,9 @@ export function SongCard({ song, onRemove }: SongCardProps) {
 
         <button
           onClick={onRemove}
-          className="text-text-muted hover:text-error p-1 rounded transition-colors flex-shrink-0"
+          className="text-[#333] hover:text-error p-1 rounded transition-colors flex-shrink-0"
         >
-          <X size={16} />
+          <X size={15} />
         </button>
       </div>
     </div>

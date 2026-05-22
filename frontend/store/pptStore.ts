@@ -74,7 +74,7 @@ interface PPTStore {
 
 export const defaultSettings: PPTSettings = {
   font_family: "NanumGothic",
-  font_size: 40,
+  font_size: 46,
   font_color: "#ffffff",
   text_position: { x: 50, y: 30 },
   bg_type: "black",

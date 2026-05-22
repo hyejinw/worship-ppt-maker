@@ -65,7 +65,7 @@ function SlideThumbnail({
       <div
         className={clsx(
           "relative overflow-hidden rounded",
-          active ? "ring-2 ring-gold" : "ring-1 ring-border hover:ring-[#555]"
+          active ? "ring-2 ring-accent" : "ring-1 ring-border hover:ring-[#555]"
         )}
         style={{ width: 120, height: 68, ...bgStyle }}
       >
@@ -98,7 +98,7 @@ function SlideThumbnail({
           </div>
         )}
       </div>
-      <span className={clsx("text-[10px]", active ? "text-gold" : "text-text-muted group-hover:text-text-primary")}>
+      <span className={clsx("text-[10px]", active ? "text-accent" : "text-text-muted group-hover:text-text-primary")}>
         {index + 1}
       </span>
     </button>
@@ -124,7 +124,7 @@ function SeparatorThumbnail({ index, active, onClick, settings }: { index: numbe
       <div
         className={clsx(
           "relative overflow-hidden rounded flex items-center justify-center",
-          active ? "ring-2 ring-gold" : "ring-1 ring-border hover:ring-[#555]"
+          active ? "ring-2 ring-accent" : "ring-1 ring-border hover:ring-[#555]"
         )}
         style={{ width: 120, height: 68, ...bgStyle }}
       >
@@ -133,7 +133,7 @@ function SeparatorThumbnail({ index, active, onClick, settings }: { index: numbe
         )}
         <span className="relative text-[9px] text-white/30">빈 슬라이드</span>
       </div>
-      <span className={clsx("text-[10px]", active ? "text-gold" : "text-text-muted group-hover:text-text-primary")}>
+      <span className={clsx("text-[10px]", active ? "text-accent" : "text-text-muted group-hover:text-text-primary")}>
         {index + 1}
       </span>
     </button>
@@ -314,8 +314,9 @@ export default function Step3() {
       const sessionId = getOrCreateSessionId();
 
       const songsWithSettings = songs.map((s) => {
-        // song.lyrics가 없으면 slidesPerSong에서 슬라이드 가사를 합쳐서 사용
-        const lyricsToSave = s.lyrics || (slidesPerSong[s.id] ?? []).map((sl) => sl.lyrics).filter(Boolean).join("\n");
+        // 슬라이드가 있으면 슬라이드 가사(최종 편집 결과)를 우선 사용, 없으면 song.lyrics fallback
+        const slideJoined = (slidesPerSong[s.id] ?? []).map((sl) => sl.lyrics).filter(Boolean).join("\n");
+        const lyricsToSave = slideJoined || s.lyrics;
         return {
           id: s.id,
           title: s.title,
@@ -371,7 +372,7 @@ export default function Step3() {
         onClick={() => onChange(!value)}
         className={clsx(
           "w-10 h-5 rounded-full transition-colors relative flex-shrink-0",
-          value ? "bg-gold" : "bg-border"
+          value ? "bg-accent" : "bg-border"
         )}
       >
         <div className={clsx(
@@ -435,7 +436,7 @@ export default function Step3() {
             step={0.05}
             value={activeSettings.overlay_opacity}
             onChange={(e) => activeUpdate({ overlay_opacity: parseFloat(e.target.value) })}
-            className="w-full accent-gold"
+            className="w-full"
           />
         </section>
       )}
@@ -446,7 +447,7 @@ export default function Step3() {
         <select
           value={activeSettings.font_family}
           onChange={(e) => activeUpdate({ font_family: e.target.value })}
-          className="w-full bg-card border border-border rounded-lg px-3 py-2 text-sm text-text-primary focus:border-gold"
+          className="w-full bg-card border border-border rounded-lg px-3 py-2 text-sm text-text-primary focus:border-accent"
         >
           {FONTS.map((f) => (
             <option key={f.value} value={f.value}>{f.label}</option>
@@ -467,7 +468,7 @@ export default function Step3() {
           step={2}
           value={activeSettings.font_size}
           onChange={(e) => activeUpdate({ font_size: parseInt(e.target.value) })}
-          className="w-full accent-gold"
+          className="w-full"
         />
         <div className="flex justify-between text-xs text-text-muted mt-1">
           <span>20pt</span>
@@ -498,7 +499,7 @@ export default function Step3() {
               onClick={() => activeUpdate({ text_position: { x: 50, y: preset.y } })}
               className={`py-2 rounded-lg border text-xs font-medium transition-colors ${
                 activeSettings.text_position.y === preset.y
-                  ? "border-gold bg-gold/10 text-gold"
+                  ? "border-accent bg-accent/10 text-accent"
                   : "border-border text-text-muted hover:border-[#555]"
               }`}
             >
@@ -615,7 +616,7 @@ export default function Step3() {
                     setFullscreen(true);
                     document.documentElement.requestFullscreen?.();
                   }}
-                  className="ml-1 flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-text-primary transition-colors"
+                  className="ml-1 flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-accent/15 hover:bg-accent/25 text-accent transition-colors border border-accent/20"
                   title="전체화면 (F)"
                 >
                   <Maximize2 size={18} />
@@ -675,7 +676,7 @@ export default function Step3() {
                 onClick={() => handleMergeToggle(true)}
                 className={clsx(
                   "flex-1 py-2 text-sm font-medium transition-colors",
-                  settings.merge_songs ? "bg-gold text-bg" : "text-text-muted hover:text-text-primary"
+                  settings.merge_songs ? "bg-accent text-white" : "text-text-muted hover:text-text-primary"
                 )}
               >
                 모든 곡 함께
@@ -684,7 +685,7 @@ export default function Step3() {
                 onClick={() => handleMergeToggle(false)}
                 className={clsx(
                   "flex-1 py-2 text-sm font-medium transition-colors border-l border-border",
-                  !settings.merge_songs ? "bg-gold text-bg" : "text-text-muted hover:text-text-primary"
+                  !settings.merge_songs ? "bg-accent text-white" : "text-text-muted hover:text-text-primary"
                 )}
               >
                 곡별 따로
@@ -700,7 +701,7 @@ export default function Step3() {
                     className={clsx(
                       "w-full text-left px-3 py-2 rounded-lg text-sm transition-colors border",
                       activeSongId === song.id
-                        ? "border-gold bg-gold/10 text-gold"
+                        ? "border-accent bg-accent/10 text-accent"
                         : "border-border text-text-primary hover:bg-card"
                     )}
                   >
@@ -745,7 +746,7 @@ export default function Step3() {
         >
           {generating ? (
             <>
-              <span className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin" />
+              <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
               생성 중...
             </>
           ) : (

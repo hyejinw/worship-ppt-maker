@@ -5,14 +5,15 @@
 @tailwind utilities;
 
 :root {
-  --bg: #111111;
-  --bg-sub: #1a1a1a;
-  --card: #222222;
-  --border: #333333;
-  --text-primary: #f0f0f0;
-  --text-muted: #888888;
-  --gold: #c9a84c;
-  --gold-light: #e8c86a;
+  --bg: #ECF4E8;
+  --bg-sub: #E0EDD9;
+  --card: #f5faf3;
+  --border: #c8dfc0;
+  --text-primary: #1a2e14;
+  --text-muted: #4a6e42;
+  --accent: #3a7d44;
+  --accent-light: #4e9e5a;
+  --accent-dim: rgba(58, 125, 68, 0.12);
 }
 
 * {
@@ -37,13 +38,49 @@ body {
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #555;
+  background: #a0bfa0;
 }
 
 input,
 textarea,
 select {
   outline: none;
+}
+
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  border-radius: 9999px;
+  background: var(--border);
+  cursor: pointer;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 2px solid white;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 2px solid white;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+  cursor: pointer;
 }
 
 input[type="color"] {

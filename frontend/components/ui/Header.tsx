@@ -11,7 +11,7 @@ export function Header({ step }: HeaderProps) {
     <header className="border-b border-border bg-bg-sub px-6 py-3 flex items-center justify-between">
       <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
         <Logo size={28} />
-        <span className="font-bold text-gold">찬양 PPT</span>
+        <span className="font-bold text-text-primary tracking-tight">찬양 PPT</span>
       </Link>
       {step && <StepIndicator current={step} />}
     </header>

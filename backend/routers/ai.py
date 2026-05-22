@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from services.gemini_service import split_lyrics_to_slides, extract_image_keywords
+from services.llm_service import split_lyrics_to_slides, extract_image_keywords
 
 router = APIRouter()
 

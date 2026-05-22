@@ -32,7 +32,6 @@ export default function Step1() {
   const { songs, addSong, removeSong, reorderSongs, setSongLyrics, setSongLoading, setSongError } =
     usePPTStore();
 
-
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
@@ -98,9 +97,9 @@ export default function Step1() {
     <div className="min-h-screen flex flex-col bg-bg">
       <Header step={1} />
 
-      <main className="flex-1 max-w-2xl mx-auto w-full px-4 py-8">
+      <main className="flex-1 max-w-2xl mx-auto w-full px-4 py-10">
         <h2 className="text-xl font-bold text-text-primary mb-1">곡 선택</h2>
-        <p className="text-text-muted text-sm mb-6">
+        <p className="text-text-muted text-sm mb-7">
           찬양 곡명을 검색해서 추가하세요. 최대 10곡까지 가능합니다.
         </p>
 
@@ -108,7 +107,7 @@ export default function Step1() {
         <div className="flex flex-col gap-2 mb-6">
           <div className="flex gap-2">
             <div className="relative flex-1">
-              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
+              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
               <input
                 ref={inputRef}
                 type="text"
@@ -117,7 +116,7 @@ export default function Step1() {
                 onKeyDown={handleKeyDown}
                 onKeyUp={handleKeyUp}
                 placeholder="곡명 (예: 베드로의 고백)"
-                className="w-full bg-card border border-border rounded-lg pl-9 pr-4 py-2.5 text-sm text-text-primary placeholder:text-text-muted focus:border-gold"
+                className="w-full bg-card border border-border rounded-lg pl-9 pr-4 py-2.5 text-sm text-text-primary placeholder:text-text-muted focus:border-accent transition-colors"
                 disabled={songs.length >= 10}
               />
             </div>
@@ -128,7 +127,7 @@ export default function Step1() {
               onKeyDown={handleKeyDown}
               onKeyUp={handleKeyUp}
               placeholder="아티스트 (선택)"
-              className="w-36 bg-card border border-border rounded-lg px-3 py-2.5 text-sm text-text-primary placeholder:text-text-muted focus:border-gold"
+              className="w-36 bg-card border border-border rounded-lg px-3 py-2.5 text-sm text-text-primary placeholder:text-text-muted focus:border-accent transition-colors"
               disabled={songs.length >= 10}
             />
             <Button
@@ -144,9 +143,9 @@ export default function Step1() {
 
         {/* 곡 목록 */}
         {songs.length === 0 ? (
-          <div className="text-center py-16 text-text-muted">
-            <Music size={48} className="mx-auto mb-3 opacity-30" />
-            <p>곡을 추가해주세요.</p>
+          <div className="text-center py-20 text-text-muted">
+            <Music size={40} className="mx-auto mb-3 opacity-20" />
+            <p className="text-sm">곡을 추가해주세요.</p>
           </div>
         ) : (
           <DndContext
@@ -155,7 +154,7 @@ export default function Step1() {
             onDragEnd={handleDragEnd}
           >
             <SortableContext items={songs.map((s) => s.id)} strategy={verticalListSortingStrategy}>
-              <div className="flex flex-col gap-3">
+              <div className="flex flex-col gap-2">
                 {songs.map((song) => (
                   <SongCard
                     key={song.id}
@@ -176,16 +175,26 @@ export default function Step1() {
       </main>
 
       {/* 하단 버튼 */}
-      <div className="border-t border-border bg-bg-sub px-6 py-4 flex justify-end">
-        <Button
-          size="lg"
-          onClick={handleNext}
-          disabled={!canProceed}
-          className="gap-2"
-        >
-          다음 단계
-          <ArrowRight size={18} />
-        </Button>
+      <div className="border-t border-border bg-bg-sub px-6 py-4 flex items-center justify-between">
+        <div className="flex-1" />
+        <div className="flex-1 text-center">
+          <p className="text-sm text-text-muted/50 italic leading-relaxed">
+            &ldquo;할렐루야 우리 하나님을 찬양하는 일이 선함이여<br />
+            찬송하는 일이 아름답고 마땅하도다&rdquo;
+          </p>
+          <p className="mt-1 text-xs text-text-muted/35 tracking-wide">시편 147:1</p>
+        </div>
+        <div className="flex-1 flex justify-end">
+          <Button
+            size="lg"
+            onClick={handleNext}
+            disabled={!canProceed}
+            className="gap-2"
+          >
+            다음 단계
+            <ArrowRight size={18} />
+          </Button>
+        </div>
       </div>
     </div>
   );

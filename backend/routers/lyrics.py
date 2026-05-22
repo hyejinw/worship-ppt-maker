@@ -4,7 +4,7 @@ from services.lyrics_service import (
     normalize_title,
     search_db,
     search_tavily,
-    extract_lyrics_with_gemini,
+    extract_lyrics_with_llm,
     save_lyrics,
 )
 
@@ -33,10 +33,10 @@ async def search_lyrics(req: SearchRequest):
     if row:
         return {"status": "found", "lyrics": row["lyrics"], "source": row["source"]}
 
-    # ② Tavily로 웹 검색 → ③ Gemini 추출 (저장 없이 반환만)
+    # ② Tavily로 웹 검색 → ③ LLM 추출 (저장 없이 반환만)
     raw_text = await search_tavily(req.song_title)
     if raw_text:
-        lyrics = await extract_lyrics_with_gemini(raw_text, db_title)
+        lyrics = await extract_lyrics_with_llm(raw_text, db_title)
         if lyrics:
             return {"status": "found", "lyrics": lyrics, "source": "tavily"}
 

@@ -26,7 +26,7 @@ export function SlideCard({
       {/* 위쪽 삽입 버튼 */}
       <button
         onClick={(e) => { e.stopPropagation(); onInsertBefore(); }}
-        className="absolute -top-2.5 left-1/2 -translate-x-1/2 z-10 opacity-0 group-hover/wrap:opacity-100 transition-opacity flex items-center gap-0.5 px-2 py-0.5 rounded-full bg-gold text-bg text-[10px] font-medium shadow"
+        className="absolute -top-3 left-1/2 -translate-x-1/2 z-10 opacity-0 group-hover/wrap:opacity-100 transition-opacity flex items-center gap-0.5 px-2.5 py-1 rounded-full bg-accent text-white text-[10px] font-semibold shadow-lg ring-1 ring-accent/50"
       >
         <Plus size={9} />
         앞에 추가
@@ -37,7 +37,7 @@ export function SlideCard({
         style={style}
         className={`flex items-start gap-2 px-3 py-2.5 rounded-lg border cursor-pointer transition-colors ${
           isActive
-            ? "border-gold bg-gold/10"
+            ? "border-accent bg-accent/10"
             : "border-border bg-card hover:border-[#444]"
         }`}
         onClick={onClick}
@@ -69,7 +69,7 @@ export function SlideCard({
       {/* 아래쪽 삽입 버튼 */}
       <button
         onClick={(e) => { e.stopPropagation(); onInsertAfter(); }}
-        className="absolute -bottom-2.5 left-1/2 -translate-x-1/2 z-10 opacity-0 group-hover/wrap:opacity-100 transition-opacity flex items-center gap-0.5 px-2 py-0.5 rounded-full bg-gold text-bg text-[10px] font-medium shadow"
+        className="absolute -bottom-3 left-1/2 -translate-x-1/2 z-10 opacity-0 group-hover/wrap:opacity-100 transition-opacity flex items-center gap-0.5 px-2.5 py-1 rounded-full bg-accent text-white text-[10px] font-semibold shadow-lg ring-1 ring-accent/50"
       >
         <Plus size={9} />
         뒤에 추가
