@@ -21,7 +21,7 @@ import { Button } from "@/components/ui/Button";
 import { SlideCard } from "@/components/editor/SlideCard";
 import { usePPTStore } from "@/store/pptStore";
 import { api } from "@/lib/api";
-import { ArrowLeft, ArrowRight, Loader2, Plus, RefreshCw, Wand2, FileText } from "lucide-react";
+import { ArrowLeft, ArrowRight, Loader2, Plus, RefreshCw, Wand2, FileText, Music } from "lucide-react";
 import { clsx } from "clsx";
 
 type Mode = "lyrics" | "slides";
@@ -338,16 +338,19 @@ function Step2Inner() {
   const activeSong = songs[activeSongIndex];
   const totalSlides = Object.values(slidesPerSong).reduce((acc, s) => acc + s.length, 0);
 
+  // 모바일 전용: 곡 목록 패널 표시 여부
+  const [showSongList, setShowSongList] = useState(false);
+
   return (
     <div className="min-h-screen flex flex-col bg-bg">
       <Header step={2} />
 
       {/* 모드 탭 */}
-      <div className="border-b border-border bg-card px-6 flex items-center gap-1 pt-2">
+      <div className="border-b border-border bg-card px-2 sm:px-6 flex items-center gap-1 pt-2">
         <button
           onClick={() => setMode("lyrics")}
           className={clsx(
-            "flex items-center gap-1.5 px-4 py-2 text-sm font-medium border-b-2 transition-colors",
+            "flex items-center gap-1.5 px-3 sm:px-4 py-2 text-sm font-medium border-b-2 transition-colors",
             mode === "lyrics"
               ? "border-accent text-accent"
               : "border-transparent text-text-muted hover:text-text-primary"
@@ -360,7 +363,7 @@ function Step2Inner() {
           onClick={() => setMode("slides")}
           disabled={totalSlides === 0}
           className={clsx(
-            "flex items-center gap-1.5 px-4 py-2 text-sm font-medium border-b-2 transition-colors disabled:opacity-30",
+            "flex items-center gap-1.5 px-3 sm:px-4 py-2 text-sm font-medium border-b-2 transition-colors disabled:opacity-30",
             mode === "slides"
               ? "border-accent text-accent"
               : "border-transparent text-text-muted hover:text-text-primary"
@@ -374,14 +377,47 @@ function Step2Inner() {
             </span>
           )}
         </button>
+
+        {/* 모바일 곡 선택 버튼 */}
+        {songs.length > 1 && (
+          <button
+            onClick={() => setShowSongList((v) => !v)}
+            className="ml-auto sm:hidden flex items-center gap-1.5 px-3 py-1.5 mb-1.5 rounded-lg bg-accent/10 text-accent text-xs font-medium border border-accent/20"
+          >
+            <Music size={13} />
+            {activeSong?.title ?? "곡 선택"}
+          </button>
+        )}
       </div>
+
+      {/* 모바일 곡 목록 드롭다운 */}
+      {showSongList && (
+        <div className="sm:hidden border-b border-border bg-bg-sub p-2 flex flex-col gap-1 z-10">
+          {songs.map((song, i) => (
+            <button
+              key={song.id}
+              onClick={() => { setActiveSongIndex(i); setShowSongList(false); }}
+              className={clsx(
+                "w-full text-left px-3 py-2 rounded-lg text-sm transition-colors",
+                activeSongIndex === i
+                  ? "bg-accent/10 text-accent border border-accent/30"
+                  : "text-text-primary hover:bg-card border border-transparent"
+              )}
+            >
+              <p className="font-medium truncate">{song.title}</p>
+              {song.artist && <p className="text-xs text-text-muted truncate">{song.artist}</p>}
+            </button>
+          ))}
+        </div>
+      )}
 
       <main className="flex-1 flex overflow-hidden" style={{ height: "calc(100vh - 57px - 41px - 73px)" }}>
 
         {/* ── 가사 검토 모드 ── */}
         {mode === "lyrics" && (
           <>
-            <div className="flex-shrink-0 border-r border-border bg-bg-sub flex flex-col" style={{ width: sidebarLyrics.size }}>
+            {/* 데스크탑: 왼쪽 사이드바 */}
+            <div className="hidden sm:flex flex-shrink-0 border-r border-border bg-bg-sub flex-col" style={{ width: sidebarLyrics.size }}>
               <div className="px-3 py-2.5 border-b border-border">
                 <p className="text-xs font-medium text-text-muted">곡 목록</p>
               </div>
@@ -405,12 +441,14 @@ function Step2Inner() {
                 ))}
               </div>
             </div>
-            <Divider onMouseDown={sidebarLyrics.onMouseDown} />
+            <div className="hidden sm:block">
+              <Divider onMouseDown={sidebarLyrics.onMouseDown} />
+            </div>
 
             <div className="flex-1 flex flex-col min-w-0">
               {activeSong && (
                 <>
-                  <div className="px-4 py-2.5 border-b border-border bg-bg-sub flex items-center justify-between">
+                  <div className="px-4 py-2.5 border-b border-border bg-bg-sub flex flex-col sm:flex-row sm:items-center gap-2 justify-between">
                     <div>
                       <span className="text-sm font-medium text-text-primary">{activeSong.title}</span>
                       {activeSong.artist && (
@@ -449,7 +487,8 @@ function Step2Inner() {
         {/* ── 슬라이드 편집 모드 ── */}
         {mode === "slides" && (
           <>
-            <div className="flex-shrink-0 border-r border-border bg-bg-sub flex flex-col" style={{ width: sidebarSlides.size }}>
+            {/* 데스크탑: 왼쪽 사이드바 */}
+            <div className="hidden sm:flex flex-shrink-0 border-r border-border bg-bg-sub flex-col" style={{ width: sidebarSlides.size }}>
               <div className="px-3 py-2.5 border-b border-border">
                 <p className="text-xs font-medium text-text-muted">곡 목록</p>
               </div>
@@ -474,16 +513,18 @@ function Step2Inner() {
                 })}
               </div>
             </div>
-            <Divider onMouseDown={sidebarSlides.onMouseDown} />
+            <div className="hidden sm:block">
+              <Divider onMouseDown={sidebarSlides.onMouseDown} />
+            </div>
 
             {activeSong && (
               <>
-                {/* 가운데: 텍스트 에디터 (6) */}
+                {/* 가운데: 텍스트 에디터 */}
                 <div className="flex-1 flex flex-col border-r border-border min-w-0">
                   <div className="px-4 py-2.5 border-b border-border flex items-center justify-between bg-bg-sub">
-                    <div>
-                      <span className="text-sm font-medium text-text-primary">{activeSong.title}</span>
-                      <span className="text-xs text-text-muted ml-2">
+                    <div className="min-w-0 flex-1">
+                      <span className="text-sm font-medium text-text-primary truncate block sm:inline">{activeSong.title}</span>
+                      <span className="text-xs text-text-muted sm:ml-2 hidden sm:inline">
                         <code className="text-accent">//</code> 로 슬라이드 구분
                       </span>
                     </div>
@@ -492,13 +533,13 @@ function Step2Inner() {
                       size="sm"
                       onClick={() => handleRerunAI(activeSong.id, editedLyrics[activeSong.id] ?? "")}
                       disabled={aiLoading}
-                      className="gap-1.5"
+                      className="gap-1.5 shrink-0 ml-2"
                     >
                       {aiLoading
                         ? <Loader2 size={13} className="animate-spin" />
                         : <RefreshCw size={13} />
                       }
-                      AI 재구분
+                      <span className="hidden sm:inline">AI </span>재구분
                     </Button>
                   </div>
                   {aiLoading ? (
@@ -535,10 +576,11 @@ function Step2Inner() {
                   )}
                 </div>
 
-                <Divider onMouseDown={rightPanel.onMouseDown} />
-
-                {/* 오른쪽: 슬라이드 목록 (4) */}
-                <div className="flex-shrink-0 flex flex-col bg-bg-sub" style={{ width: rightPanel.size }}>
+                {/* 데스크탑: 오른쪽 슬라이드 목록 */}
+                <div className="hidden sm:flex">
+                  <Divider onMouseDown={rightPanel.onMouseDown} />
+                </div>
+                <div className="hidden sm:flex flex-shrink-0 flex-col bg-bg-sub" style={{ width: rightPanel.size }}>
                   <div className="px-4 py-2.5 border-b border-border">
                     <span className="text-sm font-medium text-text-primary">
                       {(slidesPerSong[activeSong.id] ?? []).length}슬라이드
@@ -590,7 +632,7 @@ function Step2Inner() {
       </main>
 
       {/* 하단 버튼 */}
-      <div className="border-t border-border bg-bg-sub px-6 py-4 flex justify-between">
+      <div className="border-t border-border bg-bg-sub px-4 sm:px-6 py-4 flex justify-between">
         <Button variant="secondary" size="lg" onClick={() => router.push("/editor/step1")} className="gap-2">
           <ArrowLeft size={18} />
           이전

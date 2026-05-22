@@ -120,25 +120,26 @@ export default function Step1() {
                 disabled={songs.length >= 10}
               />
             </div>
-            <input
-              type="text"
-              value={artist}
-              onChange={(e) => setArtist(e.target.value)}
-              onKeyDown={handleKeyDown}
-              onKeyUp={handleKeyUp}
-              placeholder="아티스트 (선택)"
-              className="w-36 bg-card border border-border rounded-lg px-3 py-2.5 text-sm text-text-primary placeholder:text-text-muted focus:border-accent transition-colors"
-              disabled={songs.length >= 10}
-            />
             <Button
               onClick={handleAddSong}
               disabled={!query.trim() || songs.length >= 10}
               size="md"
+              className="shrink-0"
             >
               <Plus size={16} />
-              추가
+              <span className="hidden sm:inline">추가</span>
             </Button>
           </div>
+          <input
+            type="text"
+            value={artist}
+            onChange={(e) => setArtist(e.target.value)}
+            onKeyDown={handleKeyDown}
+            onKeyUp={handleKeyUp}
+            placeholder="아티스트 (선택)"
+            className="w-full sm:w-48 bg-card border border-border rounded-lg px-3 py-2.5 text-sm text-text-primary placeholder:text-text-muted focus:border-accent transition-colors"
+            disabled={songs.length >= 10}
+          />
         </div>
 
         {/* 곡 목록 */}
@@ -175,9 +176,9 @@ export default function Step1() {
       </main>
 
       {/* 하단 버튼 */}
-      <div className="border-t border-border bg-bg-sub px-6 py-4 flex items-center justify-between">
-        <div className="flex-1" />
-        <div className="flex-1 text-center">
+      <div className="border-t border-border bg-bg-sub px-4 sm:px-6 py-4 flex items-center justify-between gap-4">
+        <div className="hidden md:flex flex-1" />
+        <div className="hidden md:block flex-1 text-center">
           <p className="text-sm text-text-muted/50 italic leading-relaxed">
             &ldquo;할렐루야 우리 하나님을 찬양하는 일이 선함이여<br />
             찬송하는 일이 아름답고 마땅하도다&rdquo;

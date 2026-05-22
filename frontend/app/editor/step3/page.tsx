@@ -9,7 +9,7 @@ import { ColorPicker } from "@/components/editor/ColorPicker";
 import { usePPTStore, defaultSettings, PPTSettings, Slide } from "@/store/pptStore";
 import { api } from "@/lib/api";
 import { saveProject, getOrCreateSessionId } from "@/lib/localStorage";
-import { ArrowLeft, Wand2, ChevronLeft, ChevronRight, Maximize2, X } from "lucide-react";
+import { ArrowLeft, Wand2, ChevronLeft, ChevronRight, Maximize2, X, Settings2, ChevronUp } from "lucide-react";
 import { clsx } from "clsx";
 
 const FONTS = [
@@ -193,6 +193,7 @@ export default function Step3() {
   const [previewIndex, setPreviewIndex] = useState(0);
   const [generating, setGenerating] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [uploadedBgUrl, setUploadedBgUrl] = useState<string | null>(
     settings.bg_type === "image" && !settings.bg_value?.includes("unsplash")
       ? settings.bg_value
@@ -526,35 +527,40 @@ export default function Step3() {
           tabIndex={0}
           ref={(el) => el?.focus()}
         >
-          {/* 슬라이드 — 화면 꽉 채움 */}
-          <div className="w-full h-full">
-            {activeItem?.type === "separator" ? (
-              <div
-                className="w-full h-full flex items-center justify-center relative overflow-hidden"
-                style={{
-                  ...(activeSettings.bg_type === "black" ? { backgroundColor: "#000" }
-                    : activeSettings.bg_type === "color" && activeSettings.bg_value ? { backgroundColor: activeSettings.bg_value }
-                    : activeSettings.bg_type === "image" && activeSettings.bg_value ? { backgroundImage: `url(${activeSettings.bg_value})`, backgroundSize: "cover", backgroundPosition: "center" }
-                    : { backgroundColor: "#000" }),
-                }}
-              >
-                {activeSettings.bg_type === "image" && activeSettings.overlay_opacity > 0 && (
-                  <div className="absolute inset-0" style={{ backgroundColor: `rgba(0,0,0,${activeSettings.overlay_opacity})` }} />
-                )}
-                <span className="relative text-white/40 text-sm">빈 슬라이드 (곡 구분)</span>
-              </div>
-            ) : (
-              <SlidePreview
-                lyrics={activePreviewLyrics}
-                songTitle={activePreviewTitle}
-                settings={activeSettings}
-                onPositionChange={(x, y) => activeUpdate({ text_position: { x, y } })}
-                fullscreen
-              />
-            )}
+          {/* 슬라이드 — 16:9 비율 유지하며 화면에 맞춤 (letterbox) */}
+          <div className="w-full h-full flex items-center justify-center">
+            <div
+              className="w-full"
+              style={{ aspectRatio: "16/9", maxHeight: "100vh", maxWidth: "calc(100vh * 16 / 9)" }}
+            >
+              {activeItem?.type === "separator" ? (
+                <div
+                  className="w-full h-full flex items-center justify-center relative overflow-hidden"
+                  style={{
+                    ...(activeSettings.bg_type === "black" ? { backgroundColor: "#000" }
+                      : activeSettings.bg_type === "color" && activeSettings.bg_value ? { backgroundColor: activeSettings.bg_value }
+                      : activeSettings.bg_type === "image" && activeSettings.bg_value ? { backgroundImage: `url(${activeSettings.bg_value})`, backgroundSize: "cover", backgroundPosition: "center" }
+                      : { backgroundColor: "#000" }),
+                  }}
+                >
+                  {activeSettings.bg_type === "image" && activeSettings.overlay_opacity > 0 && (
+                    <div className="absolute inset-0" style={{ backgroundColor: `rgba(0,0,0,${activeSettings.overlay_opacity})` }} />
+                  )}
+                  <span className="relative text-white/40 text-sm">빈 슬라이드 (곡 구분)</span>
+                </div>
+              ) : (
+                <SlidePreview
+                  lyrics={activePreviewLyrics}
+                  songTitle={activePreviewTitle}
+                  settings={activeSettings}
+                  onPositionChange={(x, y) => activeUpdate({ text_position: { x, y } })}
+                  fullscreen
+                />
+              )}
+            </div>
           </div>
 
-          {/* 오버레이 UI — hover 시 표시 */}
+          {/* 오버레이 UI — hover/touch 시 표시 */}
           <div className="absolute inset-0 flex flex-col pointer-events-none group">
             {/* 상단 바 */}
             <div className="flex items-center justify-between px-5 py-3 bg-gradient-to-b from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-auto">
@@ -588,14 +594,14 @@ export default function Step3() {
         </div>
       )}
 
-      <main className="flex-1 flex overflow-hidden" style={{ height: "calc(100vh - 57px - 73px)" }}>
-        {/* 왼쪽: 미리보기 + 하단 썸네일 */}
-        <div className="flex-1 flex flex-col overflow-hidden">
+      <main className="flex-1 flex flex-col sm:flex-row overflow-hidden" style={{ height: "calc(100vh - 57px - 73px)" }}>
+        {/* 미리보기 + 하단 썸네일 */}
+        <div className="flex-1 flex flex-col overflow-hidden min-h-0">
           {/* 메인 프리뷰 영역 */}
-          <div className="flex-1 flex flex-col p-6 gap-4 overflow-auto">
+          <div className="flex-1 flex flex-col justify-center p-3 sm:p-6 gap-3 sm:gap-4 overflow-auto min-h-0">
             <div className="flex items-center justify-between">
-              <h2 className="font-semibold text-text-primary">슬라이드 미리보기</h2>
-              <div className="flex items-center gap-2 text-sm text-text-muted">
+              <h2 className="font-semibold text-text-primary text-sm sm:text-base">슬라이드 미리보기</h2>
+              <div className="flex items-center gap-1 sm:gap-2 text-sm text-text-muted">
                 <button
                   onClick={() => setPreviewIndex(Math.max(0, safeIndex - 1))}
                   disabled={safeIndex === 0}
@@ -603,7 +609,7 @@ export default function Step3() {
                 >
                   <ChevronLeft size={16} />
                 </button>
-                <span>{safeIndex + 1} / {previewItems.length}</span>
+                <span className="text-xs sm:text-sm">{safeIndex + 1} / {previewItems.length}</span>
                 <button
                   onClick={() => setPreviewIndex(Math.min(previewItems.length - 1, safeIndex + 1))}
                   disabled={safeIndex >= previewItems.length - 1}
@@ -616,11 +622,11 @@ export default function Step3() {
                     setFullscreen(true);
                     document.documentElement.requestFullscreen?.();
                   }}
-                  className="ml-1 flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-accent/15 hover:bg-accent/25 text-accent transition-colors border border-accent/20"
-                  title="전체화면 (F)"
+                  className="ml-1 flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 rounded-lg bg-accent/15 hover:bg-accent/25 text-accent transition-colors border border-accent/20"
+                  title="전체화면"
                 >
-                  <Maximize2 size={18} />
-                  <span className="text-xs font-medium">전체화면</span>
+                  <Maximize2 size={15} />
+                  <span className="text-xs font-medium hidden sm:inline">전체화면</span>
                 </button>
               </div>
             </div>
@@ -651,7 +657,7 @@ export default function Step3() {
               />
             )}
 
-            <p className="text-xs text-text-muted text-center">
+            <p className="text-xs text-text-muted text-center hidden sm:block">
               텍스트 박스를 드래그해서 위치를 조정하세요. 가이드라인에 스냅됩니다.
             </p>
           </div>
@@ -665,9 +671,8 @@ export default function Step3() {
           />
         </div>
 
-        {/* 오른쪽: 설정 패널 */}
-        <div className="w-80 border-l border-border bg-bg-sub overflow-y-auto p-5 flex flex-col gap-5">
-
+        {/* 데스크탑: 오른쪽 설정 패널 */}
+        <div className="hidden sm:flex w-80 border-l border-border bg-bg-sub overflow-y-auto p-5 flex-col gap-5">
           {/* 출력 방식 */}
           <section>
             <h3 className="text-sm font-semibold text-text-primary mb-3">출력 방식</h3>
@@ -725,10 +730,78 @@ export default function Step3() {
 
           <SettingsPanel />
         </div>
+
+        {/* 모바일: 하단 슬라이딩 설정 패널 */}
+        <div className="sm:hidden">
+          {/* 토글 버튼 */}
+          <div className="border-t border-border bg-bg-sub">
+            <button
+              onClick={() => setSettingsOpen((v) => !v)}
+              className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-text-primary"
+            >
+              <div className="flex items-center gap-2">
+                <Settings2 size={15} className="text-accent" />
+                디자인 설정
+              </div>
+              <ChevronUp
+                size={16}
+                className={clsx("text-text-muted transition-transform", settingsOpen ? "rotate-180" : "")}
+              />
+            </button>
+          </div>
+
+          {settingsOpen && (
+            <div className="border-t border-border bg-bg-sub overflow-y-auto p-4 flex flex-col gap-4 max-h-[55vh]">
+              {/* 출력 방식 */}
+              <section>
+                <h3 className="text-sm font-semibold text-text-primary mb-3">출력 방식</h3>
+                <div className="flex rounded-lg overflow-hidden border border-border">
+                  <button
+                    onClick={() => handleMergeToggle(true)}
+                    className={clsx(
+                      "flex-1 py-2 text-sm font-medium transition-colors",
+                      settings.merge_songs ? "bg-accent text-white" : "text-text-muted hover:text-text-primary"
+                    )}
+                  >
+                    모든 곡 함께
+                  </button>
+                  <button
+                    onClick={() => handleMergeToggle(false)}
+                    className={clsx(
+                      "flex-1 py-2 text-sm font-medium transition-colors border-l border-border",
+                      !settings.merge_songs ? "bg-accent text-white" : "text-text-muted hover:text-text-primary"
+                    )}
+                  >
+                    곡별 따로
+                  </button>
+                </div>
+                {!settings.merge_songs && (
+                  <div className="mt-2 flex flex-col gap-1">
+                    {songs.map((song) => (
+                      <button
+                        key={song.id}
+                        onClick={() => handleExportSongChange(song.id)}
+                        className={clsx(
+                          "w-full text-left px-3 py-2 rounded-lg text-sm transition-colors border",
+                          activeSongId === song.id
+                            ? "border-accent bg-accent/10 text-accent"
+                            : "border-border text-text-primary hover:bg-card"
+                        )}
+                      >
+                        {song.title}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </section>
+              <SettingsPanel />
+            </div>
+          )}
+        </div>
       </main>
 
       {/* 하단 버튼 */}
-      <div className="border-t border-border bg-bg-sub px-6 py-4 flex justify-between">
+      <div className="border-t border-border bg-bg-sub px-4 sm:px-6 py-4 flex justify-between">
         <Button
           variant="secondary"
           size="lg"

@@ -23,13 +23,13 @@ export default function Home() {
           <Logo size={72} />
         </div>
 
-        <h1 className="text-5xl font-bold text-text-primary mb-3 tracking-tight">
+        <h1 className="text-4xl sm:text-5xl font-bold text-text-primary mb-3 tracking-tight">
           찬양 PPT
         </h1>
-        <p className="text-text-muted text-lg mb-2 max-w-md leading-relaxed">
+        <p className="text-text-muted text-base sm:text-lg mb-2 max-w-md leading-relaxed">
           곡명만 입력하면 AI가 자동으로
         </p>
-        <p className="text-accent text-lg font-medium mb-10">
+        <p className="text-accent text-base sm:text-lg font-medium mb-10">
           가사 수집 → 슬라이드 구분 → .pptx 생성
         </p>
 
@@ -60,7 +60,7 @@ export default function Home() {
 
       {/* 최근 프로젝트 */}
       {projects.length > 0 && (
-        <div className="border-t border-border bg-bg-sub px-6 py-6">
+        <div className="border-t border-border bg-bg-sub px-4 sm:px-6 py-6">
           <div className="max-w-2xl mx-auto">
             <h2 className="text-text-muted text-xs font-semibold uppercase tracking-widest mb-3 flex items-center gap-2">
               <Music size={12} />
