@@ -28,7 +28,7 @@ export function SongCard({ song, onRemove }: SongCardProps) {
 
   const statusText = () => {
     if (song.loading) return "가사 수집 중...";
-    if (song.error) return "가사를 찾지 못했습니다. 2단계에서 직접 입력하세요.";
+    if (song.error) return "가사를 찾지 못했습니다. 곡명을 눌러 직접 입력하세요.";
     if (song.lyrics && song.source) {
       const sourceLabel = { manual: "직접 입력", tavily: "웹 검색", db: "저장된 가사" }[song.source];
       return `가사 로드됨 (${sourceLabel})`;

@@ -13,10 +13,15 @@ from routers import lyrics, ai, images, ppt
 app = FastAPI(title="Worship PPT API", version="1.0.0")
 
 frontend_url = os.getenv("FRONTEND_URL", "http://localhost:3000")
+allowed_origins = list({
+    frontend_url,
+    "http://localhost:3000",
+    "https://worship-ppt-maker.vercel.app",
+})
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[frontend_url, "http://localhost:3000"],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

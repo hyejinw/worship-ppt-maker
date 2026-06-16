@@ -43,25 +43,25 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: "#F2F7F0" }}>
+    <div className="min-h-screen flex flex-col overflow-x-hidden" style={{ background: "#F2F7F0" }}>
 
       {/* Navbar */}
-      <nav className="w-full px-6 sm:px-10 py-4 flex items-center justify-between" style={{ borderBottom: "1px solid #D8EBD0" }}>
+      <nav className="w-full px-4 sm:px-10 py-3 sm:py-4 flex items-center justify-between gap-3" style={{ borderBottom: "1px solid #D8EBD0" }}>
         <div className="flex items-center gap-2.5">
           <Image src="/hymnly-logo.png" alt="Hymnly" width={37} height={37} className="object-contain" />
-          <div>
+          <div className="min-w-0">
             <span className="font-bold text-[#2E5E3E] text-base tracking-tight">Hymnly</span>
-            <p className="text-[10px] text-[#5BAA72] font-medium tracking-widest uppercase -mt-0.5">Worship Slides</p>
+            <p className="hidden sm:block text-[10px] text-[#5BAA72] font-medium tracking-widest uppercase -mt-0.5">Worship Slides</p>
           </div>
         </div>
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-3 sm:gap-6">
           <div className="hidden sm:flex items-center gap-6 text-sm text-[#4a7a56] font-medium">
             <a href="#features" className="hover:text-[#2E5E3E] transition-colors">기능 소개</a>
             <a href="#how" className="hover:text-[#2E5E3E] transition-colors">사용 방법</a>
           </div>
           <Link href="/editor/step1" onClick={reset}>
             <button
-              className="text-sm font-semibold text-white px-5 py-2 rounded-full transition-all hover:opacity-90 shadow-sm"
+              className="text-xs sm:text-sm font-semibold text-white px-4 sm:px-5 py-2 rounded-full transition-all hover:opacity-90 shadow-sm whitespace-nowrap"
               style={{ background: "#2E5E3E" }}
             >
               새 예배 만들기
@@ -71,12 +71,12 @@ export default function Home() {
       </nav>
 
       {/* Hero */}
-      <section className="flex-1 flex items-center justify-center px-6 sm:px-12 py-14">
-        <div className="w-full max-w-5xl flex flex-col lg:flex-row items-center gap-12">
+      <section className="flex-1 flex items-center justify-center px-4 sm:px-12 py-10 sm:py-14">
+        <div className="w-full max-w-5xl flex flex-col lg:flex-row items-center gap-8 sm:gap-12">
 
           {/* Left: text */}
           <div className="flex flex-col items-start w-full lg:w-[52%]">
-            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold text-[#1a3824] leading-[1.4] tracking-tight mb-6">
+            <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold text-[#1a3824] leading-[1.22] sm:leading-[1.4] tracking-tight mb-4 sm:mb-6">
               예배 슬라이드,
               <br />
               <span className="relative inline-block">
@@ -85,7 +85,7 @@ export default function Home() {
               </span>
             </h1>
 
-            <p className="text-[#4a7a56] text-lg sm:text-xl leading-relaxed mb-10">
+            <p className="text-[#4a7a56] text-base sm:text-xl leading-relaxed mb-7 sm:mb-10">
               곡명만 입력하면 AI가 가사를 정리하고
               <br />
               예배용 PPT를 자동으로 만들어드립니다.
@@ -93,7 +93,7 @@ export default function Home() {
 
             <Link href="/editor/step1" onClick={reset}>
               <button
-                className="inline-flex items-center gap-2.5 text-white font-semibold text-base px-8 py-4 rounded-xl transition-all hover:opacity-90 shadow-lg"
+                className="inline-flex items-center gap-2.5 text-white font-semibold text-sm sm:text-base px-6 sm:px-8 py-3.5 sm:py-4 rounded-xl transition-all hover:opacity-90 shadow-lg"
                 style={{ background: "#2E5E3E", boxShadow: "0 4px 20px rgba(46,94,62,0.25)" }}
               >
                 <Plus size={18} strokeWidth={2.5} />
@@ -110,7 +110,7 @@ export default function Home() {
       </section>
 
       {/* Features */}
-      <section id="features" className="px-6 sm:px-10 py-12" style={{ background: "white", borderTop: "1px solid #D8EBD0" }}>
+      <section id="features" className="px-4 sm:px-10 py-10 sm:py-12" style={{ background: "white", borderTop: "1px solid #D8EBD0" }}>
         <div className="max-w-5xl mx-auto">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
             {[
@@ -148,7 +148,7 @@ export default function Home() {
 
       {/* Recent projects */}
       {projects.length > 0 && (
-        <section className="px-6 sm:px-10 py-8" style={{ background: "#F2F7F0", borderTop: "1px solid #D8EBD0" }}>
+        <section className="px-4 sm:px-10 py-8" style={{ background: "#F2F7F0", borderTop: "1px solid #D8EBD0" }}>
           <div className="max-w-5xl mx-auto">
             <h2 className="text-xs font-bold uppercase tracking-widest text-[#5BAA72] mb-4 flex items-center gap-2">
               <Music size={12} />
@@ -163,7 +163,7 @@ export default function Home() {
                 >
                   <div>
                     <p className="text-sm font-semibold text-[#1a3824]">{p.title}</p>
-                    <p className="text-xs text-[#4a7a56] mt-0.5 truncate max-w-[180px]">
+                    <p className="text-xs text-[#4a7a56] mt-0.5 truncate max-w-[140px] sm:max-w-[180px]">
                       {p.songs.join(", ")}
                     </p>
                   </div>
@@ -189,7 +189,7 @@ export default function Home() {
       )}
 
       {/* Footer */}
-      <footer className="px-6 sm:px-10 py-6 text-center" style={{ borderTop: "1px solid #D8EBD0" }}>
+      <footer className="px-4 sm:px-10 py-6 text-center" style={{ borderTop: "1px solid #D8EBD0" }}>
         <p className="text-xs text-[#5BAA72]">© 2025 Hymnly · 예배를 더 아름답게</p>
       </footer>
     </div>

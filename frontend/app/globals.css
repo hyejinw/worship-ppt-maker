@@ -1,5 +1,23 @@
 @import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css");
 
+@font-face {
+  font-family: "ATitleGothic1";
+  src: url("/fonts/a%E1%84%90%E1%85%A1%E1%84%8B%E1%85%B5%E1%84%90%E1%85%B3%E1%86%AF%E1%84%80%E1%85%A9%E1%84%83%E1%85%B5%E1%86%A81.ttf") format("truetype");
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "ATitleGothic2";
+  src: url("/fonts/a%E1%84%90%E1%85%A1%E1%84%8B%E1%85%B5%E1%84%90%E1%85%B3%E1%86%AF%E1%84%80%E1%85%A9%E1%84%83%E1%85%B5%E1%86%A82.ttf") format("truetype");
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "ATitleGothic3";
+  src: url("/fonts/a%E1%84%90%E1%85%A1%E1%84%8B%E1%85%B5%E1%84%90%E1%85%B3%E1%86%AF%E1%84%80%E1%85%A9%E1%84%83%E1%85%B5%E1%86%A83.ttf") format("truetype");
+  font-display: swap;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

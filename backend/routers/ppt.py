@@ -28,9 +28,11 @@ class TextPosition(BaseModel):
 
 class PPTSettings(BaseModel):
     font_family: str = "NanumGothic"
-    font_size: int = 40
+    font_size: int = 48
     font_color: str = "#ffffff"
     text_position: TextPosition = TextPosition()
+    title_position: TextPosition = TextPosition(x=80, y=70)
+    text_box_width: float = 95.0
     bg_type: str = "black"
     bg_value: str | None = None
     overlay_opacity: float = 0.0

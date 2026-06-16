@@ -1,7 +1,5 @@
 import io
-import os
 import httpx
-from pathlib import Path
 from pptx import Presentation
 from pptx.util import Inches, Pt, Emu
 from pptx.dml.color import RGBColor
@@ -9,17 +7,34 @@ from pptx.enum.text import PP_ALIGN
 from pptx.oxml.ns import qn
 from lxml import etree
 
-FONTS_DIR = Path(__file__).parent.parent / "fonts"
-
 SLIDE_WIDTH = Inches(13.33)   # 33.87cm
 SLIDE_HEIGHT = Inches(7.5)    # 19.05cm
 
-FONT_FILES = {
-    "NanumGothic": "NanumGothic.ttf",
-    "NanumMyeongjo": "NanumMyeongjo.ttf",
-    "NanumSquare": "NanumSquare.ttf",
-    "NotoSansKR": "NotoSansKR.ttf",
+FONT_SPECS = {
+    "NanumGothic": {"file": "NanumGothic.ttf", "family": "NanumGothic"},
+    "NanumMyeongjo": {"file": "NanumMyeongjo.ttf", "family": "NanumMyeongjo"},
+    "NanumSquare": {"file": "NanumSquareR.ttf", "family": "NanumSquare"},
+    "NotoSansKR": {"file": "NotoSansKR-Regular.ttf", "family": "Noto Sans KR"},
+    "ATitleGothic1": {"file": "a타이틀고딕1.ttf", "family": "a타이틀고딕1"},
+    "ATitleGothic2": {"file": "a타이틀고딕2.ttf", "family": "a타이틀고딕2"},
+    "ATitleGothic3": {"file": "a타이틀고딕3.ttf", "family": "a타이틀고딕3"},
 }
+
+
+def _get_font_spec(font_family: str) -> dict[str, str]:
+    return FONT_SPECS.get(font_family, FONT_SPECS["NanumGothic"])
+
+
+def _apply_font_family(font, font_family: str):
+    family_name = _get_font_spec(font_family)["family"]
+    font.name = family_name
+
+    r_pr = font._rPr
+    for tag in ("latin", "ea", "cs"):
+        node = r_pr.find(qn(f"a:{tag}"))
+        if node is None:
+            node = etree.SubElement(r_pr, qn(f"a:{tag}"))
+        node.set("typeface", family_name)
 
 
 def _hex_to_rgb(hex_color: str) -> tuple[int, int, int]:
@@ -73,9 +88,19 @@ def _add_overlay(slide, opacity: float):
     line.fill.background()
 
 
-def _add_text_box(slide, lyrics: str, font_family: str, font_size: int, x_pct: float, y_pct: float, font_color: str = "#ffffff"):
+def _add_text_box(
+    slide,
+    lyrics: str,
+    font_family: str,
+    font_size: int,
+    x_pct: float,
+    y_pct: float,
+    font_color: str = "#ffffff",
+    text_box_width_pct: float = 95,
+):
     line_count = len([l for l in lyrics.split("\n") if l.strip()])
-    box_width = SLIDE_WIDTH * 0.85
+    width_ratio = max(0.35, min(0.95, text_box_width_pct / 100))
+    box_width = Emu(int(SLIDE_WIDTH * width_ratio))
     line_height_pt = font_size * 1.5
     box_height = Pt(line_height_pt * max(line_count, 1) + font_size)
 
@@ -105,38 +130,43 @@ def _add_text_box(slide, lyrics: str, font_family: str, font_size: int, x_pct: f
         font.color.rgb = RGBColor(r, g, b)
         font.bold = False
 
-        font_file = FONTS_DIR / FONT_FILES.get(font_family, "NanumGothic.ttf")
-        if font_file.exists():
-            font.name = font_family
+        _apply_font_family(font, font_family)
 
 
-def _add_title_box(slide, title: str, font_family: str, font_size: int):
-    """곡 제목을 하단 오른쪽에 작게 표시"""
-    title_font_size = max(12, font_size // 3)
-    box_width = SLIDE_WIDTH * 0.4
-    box_height = Pt(title_font_size * 2)
-    margin = Inches(0.2)
+def _add_title_box(
+    slide,
+    title: str,
+    font_family: str,
+    font_size: int,
+    x_pct: float,
+    y_pct: float,
+    font_color: str = "#ffffff",
+):
+    title_font_size = max(12, int(round(font_size * 0.48)))
+    box_width = Emu(int(SLIDE_WIDTH * 0.32))
+    box_height = Pt(title_font_size * 1.8)
 
-    left = SLIDE_WIDTH - box_width - margin
-    top = SLIDE_HEIGHT - box_height - margin
+    left_center = SLIDE_WIDTH * (x_pct / 100) - box_width / 2
+    top_center = SLIDE_HEIGHT * (y_pct / 100) - box_height / 2
+    left = max(0, min(left_center, SLIDE_WIDTH - box_width))
+    top = max(0, min(top_center, SLIDE_HEIGHT - box_height))
 
     txBox = slide.shapes.add_textbox(left, top, box_width, box_height)
     tf = txBox.text_frame
     tf.word_wrap = False
 
     p = tf.paragraphs[0]
-    p.alignment = PP_ALIGN.RIGHT
+    p.alignment = PP_ALIGN.CENTER
     run = p.add_run()
     run.text = f"- {title.strip()}"
 
     font = run.font
+    r, g, b = _hex_to_rgb(font_color)
     font.size = Pt(title_font_size)
-    font.color.rgb = RGBColor(200, 200, 200)
+    font.color.rgb = RGBColor(r, g, b)
     font.bold = False
 
-    font_file = FONTS_DIR / FONT_FILES.get(font_family, "NanumGothic.ttf")
-    if font_file.exists():
-        font.name = font_family
+    _apply_font_family(font, font_family)
 
 
 def _apply_background(slide, bg_type, bg_value, bg_image_data):
@@ -167,8 +197,12 @@ async def build_pptx(
     font_size = settings.get("font_size", 40)
     font_color = settings.get("font_color", "#ffffff")
     text_pos = settings.get("text_position", {"x": 50, "y": 30})
+    title_pos = settings.get("title_position", {"x": 86, "y": 92})
+    text_box_width = settings.get("text_box_width", 95)
     x_pct = text_pos.get("x", 50)
     y_pct = text_pos.get("y", 30)
+    title_x_pct = title_pos.get("x", 86)
+    title_y_pct = title_pos.get("y", 92)
     bg_type = settings.get("bg_type", "black")
     bg_value = settings.get("bg_value")
     overlay_opacity = settings.get("overlay_opacity", 0.0)
@@ -194,9 +228,9 @@ async def build_pptx(
         if overlay_opacity > 0:
             _add_overlay(slide, overlay_opacity)
         if lyrics.strip():
-            _add_text_box(slide, lyrics, font_family, font_size, x_pct, y_pct, font_color)
+            _add_text_box(slide, lyrics, font_family, font_size, x_pct, y_pct, font_color, text_box_width)
         if show_title and title:
-            _add_title_box(slide, title, font_family, font_size)
+            _add_title_box(slide, title, font_family, font_size, title_x_pct, title_y_pct, font_color)
 
     separator_slides = settings.get("separator_slides", True)
 

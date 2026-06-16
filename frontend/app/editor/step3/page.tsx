@@ -20,13 +20,23 @@ import {
   Loader2,
   Monitor,
   Layers,
+  RotateCcw,
 } from "lucide-react";
+
+type Step3Snapshot = {
+  slides: Slide[];
+  settings: PPTSettings;
+  songSettings: Record<string, PPTSettings>;
+};
 
 const FONTS = [
   { value: "NanumGothic", label: "나눔고딕" },
   { value: "NanumMyeongjo", label: "나눔명조" },
   { value: "NanumSquare", label: "나눔스퀘어" },
   { value: "NotoSansKR", label: "Noto Sans KR" },
+  { value: "ATitleGothic1", label: "a타이틀고딕1" },
+  { value: "ATitleGothic2", label: "a타이틀고딕2" },
+  { value: "ATitleGothic3", label: "a타이틀고딕3" },
 ];
 
 const GOOGLE_FONTS: Record<string, string> = {
@@ -34,11 +44,20 @@ const GOOGLE_FONTS: Record<string, string> = {
   NanumMyeongjo: "'Nanum Myeongjo', serif",
   NanumSquare: "'Nanum Square', sans-serif",
   NotoSansKR: "'Noto Sans KR', sans-serif",
+  ATitleGothic1: "'ATitleGothic1', sans-serif",
+  ATitleGothic2: "'ATitleGothic2', sans-serif",
+  ATitleGothic3: "'ATitleGothic3', sans-serif",
 };
 
 type PreviewItem =
-  | { type: "slide"; slide: Slide; songTitle?: string }
-  | { type: "separator" };
+  | { type: "slide"; slide: Slide; songTitle?: string; settings: PPTSettings }
+  | { type: "separator"; settings: PPTSettings };
+
+const THUMBNAIL_OUTER_WIDTH = 104;
+const THUMBNAIL_SCALE = 0.25;
+const THUMBNAIL_INNER_WIDTH = THUMBNAIL_OUTER_WIDTH / THUMBNAIL_SCALE;
+const THUMBNAIL_INNER_HEIGHT = THUMBNAIL_INNER_WIDTH * (9 / 16);
+const THUMBNAIL_OUTER_HEIGHT = THUMBNAIL_INNER_HEIGHT * THUMBNAIL_SCALE;
 
 // ── 썸네일 ──────────────────────────────────────────────
 function SlideThumbnail({
@@ -58,63 +77,67 @@ function SlideThumbnail({
   onClick: () => void;
   isEmpty?: boolean;
 }) {
-  const { bg_type, bg_value, font_family, font_size, font_color, overlay_opacity } = settings;
-
-  const bgStyle: React.CSSProperties = (() => {
-    if (bg_type === "black") return { backgroundColor: "#000" };
-    if (bg_type === "color" && bg_value) return { backgroundColor: bg_value };
-    if (bg_type === "image" && bg_value)
-      return { backgroundImage: `url(${bg_value})`, backgroundSize: "cover", backgroundPosition: "center" };
-    return { backgroundColor: "#000" };
-  })();
-
-  const scaledFont = Math.max(4, Math.round(font_size * (104 / 960)));
-
   return (
-    <button onClick={onClick} className="flex-shrink-0 flex flex-col items-center gap-1.5 group">
+    <button
+      onClick={onClick}
+      className="flex-shrink-0 flex flex-col items-center gap-1.5 group transition-transform duration-200"
+      style={{ transform: active ? "translateY(-4px) scale(1.03)" : "translateY(0) scale(1)" }}
+    >
       <div
         className="relative overflow-hidden transition-all"
         style={{
-          width: 104,
-          height: 58,
-          ...bgStyle,
-          borderRadius: 6,
-          outline: active ? "2px solid #2E5E3E" : "2px solid transparent",
-          boxShadow: active ? "0 0 0 1px #2E5E3E" : "0 1px 4px rgba(0,0,0,0.18)",
+          width: THUMBNAIL_OUTER_WIDTH,
+          height: THUMBNAIL_OUTER_HEIGHT,
+          borderRadius: 8,
+          outline: active ? "3px solid #2E5E3E" : "1px solid rgba(216,235,208,0.9)",
+          outlineOffset: active ? 0 : -1,
+          boxShadow: active
+            ? "0 14px 26px rgba(25,56,36,0.32), 0 0 0 4px rgba(46,94,62,0.14)"
+            : "0 4px 10px rgba(0,0,0,0.12)",
+          background: "#fff",
         }}
       >
-        {overlay_opacity > 0 && (
-          <div className="absolute inset-0" style={{ backgroundColor: `rgba(0,0,0,${overlay_opacity})` }} />
-        )}
-        {!isEmpty && slide?.lyrics && (
-          <div className="absolute inset-0 flex items-center justify-center px-1">
-            <p
-              style={{
-                fontFamily: GOOGLE_FONTS[font_family] || "sans-serif",
-                fontSize: `${scaledFont}px`,
-                color: font_color || "#ffffff",
-                textAlign: "center",
-                whiteSpace: "pre-line",
-                lineHeight: 1.4,
-                overflow: "hidden",
-                maxHeight: "100%",
-              }}
+        {active && (
+          <>
+            <div
+              className="absolute inset-x-0 top-0 z-20 h-1.5"
+              style={{ background: "linear-gradient(90deg, #7FD39A 0%, #2E5E3E 100%)" }}
+            />
+            <div
+              className="absolute right-1.5 top-1.5 z-20 rounded-full px-1.5 py-0.5 text-[8px] font-bold tracking-[0.18em] text-white"
+              style={{ background: "rgba(25,56,36,0.84)" }}
             >
-              {slide.lyrics}
-            </p>
-          </div>
+              NOW
+            </div>
+          </>
         )}
-        {!isEmpty && settings.show_title && songTitle && (
-          <div className="absolute bottom-0.5 right-1">
-            <p style={{ fontFamily: GOOGLE_FONTS[font_family], fontSize: "3.5px", color: "rgba(200,200,200,0.85)" }}>
-              {songTitle}
-            </p>
-          </div>
-        )}
+        <div
+          style={{
+            width: THUMBNAIL_INNER_WIDTH,
+            height: THUMBNAIL_INNER_HEIGHT,
+            transform: `scale(${THUMBNAIL_SCALE})`,
+            transformOrigin: "top left",
+          }}
+        >
+          <SlidePreview
+            lyrics={isEmpty ? "" : slide?.lyrics ?? ""}
+            songTitle={!isEmpty ? songTitle : undefined}
+            settings={settings}
+            onPositionChange={() => {}}
+            thumbnail
+          />
+        </div>
       </div>
       <span
-        className="text-[10px] font-mono tabular-nums transition-colors"
-        style={{ color: active ? "#2E5E3E" : "#86C59A" }}
+        className="text-[10px] font-mono tabular-nums transition-all"
+        style={{
+          color: active ? "#173620" : "#86C59A",
+          fontWeight: active ? 800 : 600,
+          letterSpacing: active ? "0.08em" : "0.04em",
+          background: active ? "rgba(46,94,62,0.12)" : "transparent",
+          borderRadius: 999,
+          padding: active ? "2px 8px" : "0px",
+        }}
       >
         {String(index + 1).padStart(2, "0")}
       </span>
@@ -141,26 +164,49 @@ function SeparatorThumbnail({
       : { backgroundColor: "#000" };
 
   return (
-    <button onClick={onClick} className="flex-shrink-0 flex flex-col items-center gap-1.5 group">
+    <button
+      onClick={onClick}
+      className="flex-shrink-0 flex flex-col items-center gap-1.5 group transition-transform duration-200"
+      style={{ transform: active ? "translateY(-4px) scale(1.03)" : "translateY(0) scale(1)" }}
+    >
       <div
         className="relative overflow-hidden flex items-center justify-center transition-all"
         style={{
-          width: 104,
-          height: 58,
+          width: THUMBNAIL_OUTER_WIDTH,
+          height: THUMBNAIL_OUTER_HEIGHT,
           ...bgStyle,
-          borderRadius: 6,
-          outline: active ? "2px solid #2E5E3E" : "2px solid transparent",
-          boxShadow: active ? "0 0 0 1px #2E5E3E" : "0 1px 4px rgba(0,0,0,0.18)",
+          borderRadius: 8,
+          outline: active ? "3px solid #2E5E3E" : "2px dashed #86C59A",
+          boxShadow: active
+            ? "0 14px 26px rgba(25,56,36,0.28), 0 0 0 4px rgba(46,94,62,0.14)"
+            : "0 4px 10px rgba(0,0,0,0.12)",
         }}
       >
+        {active && (
+          <div
+            className="absolute inset-x-0 top-0 z-20 h-1.5"
+            style={{ background: "linear-gradient(90deg, #7FD39A 0%, #2E5E3E 100%)" }}
+          />
+        )}
         {settings.bg_type === "image" && settings.overlay_opacity > 0 && (
           <div className="absolute inset-0" style={{ backgroundColor: `rgba(0,0,0,${settings.overlay_opacity})` }} />
         )}
-        <span className="relative text-[8px] text-white/30 font-medium">빈 슬라이드</span>
+        <div className="absolute inset-0" style={{ background: "rgba(0,0,0,0.35)" }} />
+        <div className="relative flex flex-col items-center gap-1">
+          <span className="text-[9px] font-semibold tracking-wide text-white/90">곡 구분</span>
+          <span className="text-[7px] font-medium text-white/65">빈 슬라이드</span>
+        </div>
       </div>
       <span
-        className="text-[10px] font-mono tabular-nums"
-        style={{ color: active ? "#2E5E3E" : "#86C59A" }}
+        className="text-[10px] font-mono tabular-nums transition-all"
+        style={{
+          color: active ? "#173620" : "#86C59A",
+          fontWeight: active ? 800 : 600,
+          letterSpacing: active ? "0.08em" : "0.04em",
+          background: active ? "rgba(46,94,62,0.12)" : "transparent",
+          borderRadius: 999,
+          padding: active ? "2px 8px" : "0px",
+        }}
       >
         {String(index + 1).padStart(2, "0")}
       </span>
@@ -171,12 +217,10 @@ function SeparatorThumbnail({
 function ThumbnailStrip({
   previewItems,
   safeIndex,
-  activeSettings,
   onSelect,
 }: {
   previewItems: PreviewItem[];
   safeIndex: number;
-  activeSettings: PPTSettings;
   onSelect: (i: number) => void;
 }) {
   const activeRef = useRef<HTMLDivElement>(null);
@@ -187,10 +231,11 @@ function ThumbnailStrip({
 
   return (
     <div
-      className="flex-shrink-0 px-4 py-3 flex gap-2.5 overflow-x-auto"
+      className="flex-shrink-0 px-4 py-4 flex gap-3 overflow-x-auto"
       style={{
         borderTop: "1px solid #D8EBD0",
-        background: "white",
+        background: "linear-gradient(180deg, #FCFEFA 0%, #F2F8EE 100%)",
+        boxShadow: "inset 0 1px 0 rgba(255,255,255,0.9)",
         scrollbarWidth: "thin",
         scrollbarColor: "#D8EBD0 transparent",
       }}
@@ -202,12 +247,12 @@ function ThumbnailStrip({
               index={i}
               active={safeIndex === i}
               onClick={() => onSelect(i)}
-              settings={activeSettings}
+              settings={item.settings}
             />
           ) : (
             <SlideThumbnail
               slide={item.slide}
-              settings={activeSettings}
+              settings={item.settings}
               songTitle={item.songTitle}
               index={i}
               active={safeIndex === i}
@@ -278,6 +323,9 @@ function SettingsContent({
   setUploadedBgUrl,
   bgColorValue,
   setBgColorValue,
+  canRestoreCurrentSlide,
+  onRestoreCurrentSlide,
+  onShowTitleChange,
 }: {
   activeSettings: PPTSettings;
   settings: PPTSettings;
@@ -287,6 +335,9 @@ function SettingsContent({
   setUploadedBgUrl: (url: string) => void;
   bgColorValue: string;
   setBgColorValue: (c: string) => void;
+  canRestoreCurrentSlide: boolean;
+  onRestoreCurrentSlide: () => void;
+  onShowTitleChange: (value: boolean) => void;
 }) {
   return (
     <div className="flex flex-col gap-5">
@@ -296,7 +347,7 @@ function SettingsContent({
         <div className="flex flex-col gap-2 px-1">
           <Toggle
             value={activeSettings.show_title}
-            onChange={(v) => activeUpdate({ show_title: v })}
+            onChange={onShowTitleChange}
             label="제목 넣기"
             sub="하단 오른쪽"
           />
@@ -308,6 +359,19 @@ function SettingsContent({
             />
           )}
         </div>
+      </div>
+
+      <div>
+        <SectionLabel>현재 슬라이드</SectionLabel>
+        <button
+          onClick={onRestoreCurrentSlide}
+          disabled={!canRestoreCurrentSlide}
+          className="w-full inline-flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold transition-all disabled:opacity-40"
+          style={{ background: "#F2F7F0", border: "1px solid #D8EBD0", color: "#2E5E3E" }}
+        >
+          <RotateCcw size={13} />
+          가사 되돌리기
+        </button>
       </div>
 
       {/* 배경 */}
@@ -429,7 +493,7 @@ function SettingsContent({
 // ── 메인 ───────────────────────────────────────────────
 export default function Step3() {
   const router = useRouter();
-  const { slides, settings, updateSettings, songSettings, updateSongSettings, songs, slidesPerSong, setJob } =
+  const { slides, settings, updateSettings, songSettings, updateSongSettings, songs, slidesPerSong, setSlides, setSlidesForSong, setJob } =
     usePPTStore();
   const [previewIndex, setPreviewIndex] = useState(0);
   const [generating, setGenerating] = useState(false);
@@ -442,6 +506,84 @@ export default function Step3() {
   const [bgColorValue, setBgColorValue] = useState<string>(
     settings.bg_type === "color" && settings.bg_value ? settings.bg_value : "#1a1a40"
   );
+  const originalSlideLyricsRef = useRef<Record<string, string>>(
+    Object.fromEntries(slides.map((slide) => [`${slide.song_id ?? "none"}:${slide.order}`, slide.lyrics]))
+  );
+  const originalGlobalBoxWidthRef = useRef(settings.text_box_width ?? defaultSettings.text_box_width);
+  const originalSongBoxWidthsRef = useRef<Record<string, number>>(
+    Object.fromEntries(
+      songs.map((song) => [
+        song.id,
+        (songSettings[song.id]?.text_box_width ?? defaultSettings.text_box_width),
+      ])
+    )
+  );
+  const historyRef = useRef<Step3Snapshot[]>([]);
+  const restoringRef = useRef(false);
+
+  function cloneSettingsValue(source: PPTSettings): PPTSettings {
+    return {
+      ...source,
+      text_position: { ...source.text_position },
+      title_position: { ...source.title_position },
+    };
+  }
+
+  function createSnapshot(): Step3Snapshot {
+    return {
+      slides: slides.map((slide) => ({ ...slide })),
+      settings: cloneSettingsValue(settings),
+      songSettings: Object.fromEntries(
+        Object.entries(songSettings).map(([songId, songSetting]) => [songId, cloneSettingsValue(songSetting)])
+      ),
+    };
+  }
+
+  function snapshotsEqual(a: Step3Snapshot, b: Step3Snapshot) {
+    return JSON.stringify(a) === JSON.stringify(b);
+  }
+
+  function pushHistorySnapshot() {
+    if (restoringRef.current) return;
+    const snapshot = createSnapshot();
+    const lastSnapshot = historyRef.current[historyRef.current.length - 1];
+    if (lastSnapshot && snapshotsEqual(lastSnapshot, snapshot)) return;
+    historyRef.current.push(snapshot);
+    if (historyRef.current.length > 10) historyRef.current.shift();
+  }
+
+  function restoreSnapshot(snapshot: Step3Snapshot) {
+    restoringRef.current = true;
+    setSlides(snapshot.slides.map((slide) => ({ ...slide })));
+    updateSettings(cloneSettingsValue(snapshot.settings));
+    const snapshotSongIds = new Set(Object.keys(snapshot.songSettings));
+    for (const songId of Object.keys(songSettings)) {
+      if (!snapshotSongIds.has(songId)) {
+        updateSongSettings(songId, { ...defaultSettings, show_title: false });
+      }
+    }
+    for (const [songId, songSetting] of Object.entries(snapshot.songSettings)) {
+      updateSongSettings(songId, cloneSettingsValue(songSetting));
+    }
+    for (const song of songs) {
+      const songSlides = snapshot.slides
+        .filter((slide) => slide.song_id === song.id)
+        .sort((a, b) => a.order - b.order)
+        .map((slide, index) => ({
+          order: index + 1,
+          lyrics: slide.lyrics,
+          song_id: slide.song_id,
+        }));
+      setSlidesForSong(song.id, songSlides);
+    }
+    restoringRef.current = false;
+  }
+
+  function undoStep3() {
+    const snapshot = historyRef.current.pop();
+    if (!snapshot) return;
+    restoreSnapshot(snapshot);
+  }
 
   const activeSongId = settings.merge_songs ? null : (settings.export_song_id ?? songs[0]?.id ?? null);
 
@@ -451,16 +593,37 @@ export default function Step3() {
     ? (songSettings[activeSongId] ?? { ...defaultSettings, show_title: false })
     : settings;
 
-  const activeUpdate = (patch: Partial<PPTSettings>) => {
+  const activeUpdate = (patch: Partial<PPTSettings>, options?: { skipHistory?: boolean }) => {
+    if (!options?.skipHistory) pushHistorySnapshot();
     if (settings.merge_songs) updateSettings(patch);
     else if (activeSongId) updateSongSettings(activeSongId, patch);
+  };
+  const trackedUpdateSettings = (patch: Partial<PPTSettings>) => {
+    pushHistorySnapshot();
+    updateSettings(patch);
+  };
+
+  const handleShowTitleChange = (value: boolean) => {
+    pushHistorySnapshot();
+    if (!value) {
+      activeUpdate({ show_title: false }, { skipHistory: true });
+      return;
+    }
+
+    if (!settings.merge_songs) {
+      activeUpdate({ show_title: true, title_position: { ...defaultSettings.title_position } }, { skipHistory: true });
+      return;
+    }
+
+    activeUpdate({ show_title: true }, { skipHistory: true });
   };
 
   const previewItems: PreviewItem[] = (() => {
     if (!settings.merge_songs) {
+      const songTitle = songs.find((s) => s.id === activeSongId)?.title;
       return slides
         .filter((s) => s.song_id === activeSongId)
-        .map((s) => ({ type: "slide" as const, slide: s }));
+        .map((s) => ({ type: "slide" as const, slide: s, songTitle, settings: activeSettings }));
     }
     const songIds = songs.map((s) => s.id);
     const grouped: Record<string, Slide[]> = {};
@@ -474,12 +637,14 @@ export default function Step3() {
         ungrouped.push(s);
       }
     }
-    if (ungrouped.length > 0) return slides.map((s) => ({ type: "slide" as const, slide: s }));
+    if (ungrouped.length > 0) {
+      return slides.map((s) => ({ type: "slide" as const, slide: s, settings }));
+    }
     const items: PreviewItem[] = [];
     songIds.forEach((sid, i) => {
       const songTitle = songs.find((s) => s.id === sid)?.title;
-      (grouped[sid] ?? []).forEach((s) => items.push({ type: "slide", slide: s, songTitle }));
-      if (settings.separator_slides && i < songIds.length - 1) items.push({ type: "separator" });
+      (grouped[sid] ?? []).forEach((s) => items.push({ type: "slide", slide: s, songTitle, settings }));
+      if (settings.separator_slides && i < songIds.length - 1) items.push({ type: "separator", settings });
     });
     return items;
   })();
@@ -492,6 +657,50 @@ export default function Step3() {
     if (settings.merge_songs) return activeItem.songTitle;
     return songs.find((s) => s.id === activeSongId)?.title;
   })();
+  const activeSlideKey = activeItem?.type === "slide"
+    ? `${activeItem.slide.song_id ?? "none"}:${activeItem.slide.order}`
+    : null;
+  const canRestoreCurrentSlide = activeItem?.type === "slide";
+
+  function syncSlidesState(nextSlides: Slide[]) {
+    setSlides(nextSlides);
+    for (const song of songs) {
+      const songSlides = nextSlides
+        .filter((slide) => slide.song_id === song.id)
+        .sort((a, b) => a.order - b.order)
+        .map((slide, index) => ({
+          order: index + 1,
+          lyrics: slide.lyrics,
+          song_id: slide.song_id,
+        }));
+      setSlidesForSong(song.id, songSlides);
+    }
+  }
+
+  function handleSlideLyricsChange(text: string) {
+    if (activeItem?.type !== "slide") return;
+    const nextSlides = slides.map((slide) =>
+      slide.order === activeItem.slide.order && slide.song_id === activeItem.slide.song_id
+        ? { ...slide, lyrics: text }
+        : slide
+    );
+    syncSlidesState(nextSlides);
+  }
+
+  function handleRestoreCurrentSlide() {
+    if (activeItem?.type !== "slide" || !activeSlideKey) return;
+    pushHistorySnapshot();
+    const originalLyrics = originalSlideLyricsRef.current[activeSlideKey] ?? activeItem.slide.lyrics;
+    handleSlideLyricsChange(originalLyrics);
+
+    if (settings.merge_songs) {
+      updateSettings({ text_box_width: originalGlobalBoxWidthRef.current });
+    } else if (activeSongId) {
+      updateSongSettings(activeSongId, {
+        text_box_width: originalSongBoxWidthsRef.current[activeSongId] ?? defaultSettings.text_box_width,
+      });
+    }
+  }
 
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
     touchStartX.current = e.touches[0].clientX;
@@ -508,6 +717,11 @@ export default function Step3() {
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "z" && !e.shiftKey) {
+        e.preventDefault();
+        undoStep3();
+        return;
+      }
       if (
         e.target instanceof HTMLInputElement ||
         e.target instanceof HTMLTextAreaElement ||
@@ -532,6 +746,7 @@ export default function Step3() {
   }, []);
 
   const handleMergeToggle = (merged: boolean) => {
+    pushHistorySnapshot();
     updateSettings({
       merge_songs: merged,
       show_title: merged ? true : settings.show_title,
@@ -541,6 +756,7 @@ export default function Step3() {
   };
 
   const handleExportSongChange = (songId: string) => {
+    pushHistorySnapshot();
     updateSettings({ export_song_id: songId });
     setPreviewIndex(0);
   };
@@ -636,7 +852,8 @@ export default function Step3() {
                   lyrics={activePreviewLyrics}
                   songTitle={activePreviewTitle}
                   settings={activeSettings}
-                  onPositionChange={(x, y) => activeUpdate({ text_position: { x, y } })}
+                  onPositionChange={(x, y) => activeUpdate({ text_position: { x, y } }, { skipHistory: true })}
+                  onTitlePositionChange={(x, y) => activeUpdate({ title_position: { x, y } }, { skipHistory: true })}
                   fullscreen
                 />
               )}
@@ -673,14 +890,14 @@ export default function Step3() {
       )}
 
       {/* 메인 레이아웃 */}
-      <main className="flex-1 flex flex-col sm:flex-row overflow-hidden min-h-0">
+      <main className="flex-1 flex flex-col lg:flex-row overflow-hidden min-h-0">
 
         {/* 미리보기 영역 */}
         <div className="flex-1 flex flex-col overflow-hidden min-h-0" style={{ background: "#F2F7F0" }}>
 
           {/* 미리보기 헤더 */}
           <div
-            className="flex-shrink-0 flex items-center justify-between px-5 py-3"
+            className="flex-shrink-0 flex items-center justify-between px-4 sm:px-5 py-3"
             style={{ background: "white", borderBottom: "1px solid #D8EBD0" }}
           >
             <div className="flex items-center gap-2">
@@ -725,7 +942,7 @@ export default function Step3() {
 
           {/* 슬라이드 프리뷰 */}
           <div
-            className="flex-1 flex items-center justify-center px-6 pt-4 pb-2 overflow-hidden"
+            className="flex-1 flex items-center justify-center px-3 sm:px-6 pt-3 sm:pt-4 pb-2 overflow-hidden"
             onTouchStart={handleTouchStart}
             onTouchEnd={handleTouchEnd}
           >
@@ -737,23 +954,30 @@ export default function Step3() {
                   lyrics={activePreviewLyrics}
                   songTitle={activePreviewTitle}
                   settings={activeSettings}
-                  onPositionChange={(x, y) => activeUpdate({ text_position: { x, y } })}
+                  onPositionChange={(x, y) => activeUpdate({ text_position: { x, y } }, { skipHistory: true })}
+                  onTitlePositionChange={(x, y) => activeUpdate({ title_position: { x, y } }, { skipHistory: true })}
+                  editable
+                  onLyricsChange={handleSlideLyricsChange}
+                  onLyricsEditStart={pushHistorySnapshot}
+                  onTextDragStart={pushHistorySnapshot}
+                  onTitleDragStart={pushHistorySnapshot}
+                  onResizeStart={pushHistorySnapshot}
+                  onTextBoxWidthChange={(width) => activeUpdate({ text_box_width: width }, { skipHistory: true })}
                 />
               )}
             </div>
           </div>
 
           {/* 드래그 안내 */}
-          <p className="flex-shrink-0 text-xs text-center pb-2 hidden sm:block" style={{ color: "#86C59A" }}>
-            텍스트 박스를 드래그해서 위치를 조정하세요. 가이드라인에 스냅됩니다.
+          <p className="flex-shrink-0 text-xs text-center pb-2 hidden lg:block" style={{ color: "#86C59A" }}>
+            슬라이드 안에서 바로 가사를 수정하고, 위치 이동과 박스 너비를 조정하세요.
           </p>
 
           {/* 썸네일 스트립 — 데스크탑 전용 */}
-          <div className="hidden sm:block">
+          <div className="hidden lg:block">
             <ThumbnailStrip
               previewItems={previewItems}
               safeIndex={safeIndex}
-              activeSettings={activeSettings}
               onSelect={setPreviewIndex}
             />
           </div>
@@ -761,7 +985,7 @@ export default function Step3() {
 
         {/* 우: 설정 패널 (데스크탑) */}
         <div
-          className="hidden sm:flex flex-col flex-shrink-0 overflow-hidden"
+          className="hidden lg:flex flex-col flex-shrink-0 overflow-hidden"
           style={{ width: 272, background: "white", borderLeft: "1px solid #D8EBD0" }}
         >
           {/* 출력 방식 */}
@@ -834,11 +1058,14 @@ export default function Step3() {
               activeSettings={activeSettings}
               settings={settings}
               activeUpdate={activeUpdate}
-              updateSettings={updateSettings}
+              updateSettings={trackedUpdateSettings}
               uploadedBgUrl={uploadedBgUrl}
               setUploadedBgUrl={setUploadedBgUrl}
               bgColorValue={bgColorValue}
               setBgColorValue={setBgColorValue}
+              canRestoreCurrentSlide={!!canRestoreCurrentSlide}
+              onRestoreCurrentSlide={handleRestoreCurrentSlide}
+              onShowTitleChange={handleShowTitleChange}
             />
           </div>
         </div>
@@ -846,17 +1073,16 @@ export default function Step3() {
       </main>
 
       {/* 모바일 전용 썸네일 스트립 — 설정 패널 닫혔을 때만 표시 */}
-      <div className={`sm:hidden flex-shrink-0${settingsOpen ? " hidden" : ""}`}>
+      <div className={`lg:hidden flex-shrink-0${settingsOpen ? " hidden" : ""}`}>
         <ThumbnailStrip
           previewItems={previewItems}
           safeIndex={safeIndex}
-          activeSettings={activeSettings}
           onSelect={setPreviewIndex}
         />
       </div>
 
       {/* 모바일: 디자인 설정 패널 — main 바깥, 썸네일 아래 */}
-      <div className="sm:hidden flex-shrink-0" style={{ background: "white", borderTop: "1px solid #D8EBD0" }}>
+      <div className="lg:hidden flex-shrink-0" style={{ background: "white", borderTop: "1px solid #D8EBD0" }}>
         <button
           onClick={() => setSettingsOpen((v) => !v)}
           className="w-full flex items-center justify-between px-5 py-3"
@@ -923,15 +1149,18 @@ export default function Step3() {
                 </div>
               )}
             </div>
-            <SettingsContent
-              activeSettings={activeSettings}
-              settings={settings}
-              activeUpdate={activeUpdate}
-              updateSettings={updateSettings}
-              uploadedBgUrl={uploadedBgUrl}
-              setUploadedBgUrl={setUploadedBgUrl}
-              bgColorValue={bgColorValue}
+                  <SettingsContent
+                    activeSettings={activeSettings}
+                    settings={settings}
+                    activeUpdate={activeUpdate}
+                    updateSettings={trackedUpdateSettings}
+                    uploadedBgUrl={uploadedBgUrl}
+                    setUploadedBgUrl={setUploadedBgUrl}
+                    bgColorValue={bgColorValue}
               setBgColorValue={setBgColorValue}
+              canRestoreCurrentSlide={!!canRestoreCurrentSlide}
+              onRestoreCurrentSlide={handleRestoreCurrentSlide}
+              onShowTitleChange={handleShowTitleChange}
             />
           </div>
         )}
@@ -939,12 +1168,12 @@ export default function Step3() {
 
       {/* 하단 버튼 바 */}
       <div
-        className="flex-shrink-0 flex items-center justify-between px-5 py-4"
+        className="flex-shrink-0 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 px-4 sm:px-5 py-4"
         style={{ background: "white", borderTop: "1px solid #D8EBD0" }}
       >
         <button
-          onClick={() => router.push("/editor/step2?mode=slides")}
-          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all"
+          onClick={() => router.push("/editor/step2")}
+          className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all w-full sm:w-auto"
           style={{ background: "#F2F7F0", border: "1px solid #D8EBD0", color: "#2E5E3E" }}
         >
           <ArrowLeft size={15} />
@@ -954,7 +1183,7 @@ export default function Step3() {
         <button
           onClick={handleGenerate}
           disabled={generating || slides.length === 0}
-          className="inline-flex items-center gap-2 px-7 py-2.5 rounded-xl text-sm font-semibold text-white transition-all disabled:opacity-40"
+          className="inline-flex items-center justify-center gap-2 px-7 py-2.5 rounded-xl text-sm font-semibold text-white transition-all disabled:opacity-40 w-full sm:w-auto"
           style={{ background: "#2E5E3E", boxShadow: slides.length > 0 && !generating ? "0 4px 16px rgba(46,94,62,0.25)" : "none" }}
         >
           {generating ? (

@@ -1,15 +1,17 @@
 import { clsx } from "clsx";
 import { Check } from "lucide-react";
 
-const STEPS = ["곡 선택", "슬라이드 편집", "PPT 설정"];
+const STEPS = ["가사 검색", "슬라이드 편집", "PPT 설정"];
 
 export function StepIndicator({ current }: { current: 1 | 2 | 3 }) {
+  const activeStep = current;
+
   return (
     <div className="flex items-center gap-1">
       {STEPS.map((label, i) => {
         const step = i + 1;
-        const isActive = step === current;
-        const isDone = step < current;
+        const isActive = step === activeStep;
+        const isDone = step < activeStep;
         return (
           <div key={step} className="flex items-center">
             <div className="flex items-center gap-2">

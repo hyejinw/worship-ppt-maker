@@ -7,6 +7,7 @@ export interface ProjectRecord {
 }
 
 const KEY = "worship_ppt_projects";
+const LYRICS_NOTICE_DISMISSED_KEY = "worship_ppt_lyrics_notice_dismissed";
 
 export function getProjects(): ProjectRecord[] {
   if (typeof window === "undefined") return [];
@@ -39,4 +40,14 @@ export function getOrCreateSessionId(): string {
     localStorage.setItem("worship_session_id", id);
   }
   return id;
+}
+
+export function getLyricsNoticeDismissed(): boolean {
+  if (typeof window === "undefined") return false;
+  return localStorage.getItem(LYRICS_NOTICE_DISMISSED_KEY) === "true";
+}
+
+export function setLyricsNoticeDismissed(dismissed: boolean) {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(LYRICS_NOTICE_DISMISSED_KEY, dismissed ? "true" : "false");
 }
