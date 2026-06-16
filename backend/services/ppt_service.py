@@ -98,11 +98,12 @@ def _add_text_box(
     font_color: str = "#ffffff",
     text_box_width_pct: float = 95,
 ):
-    line_count = len([l for l in lyrics.split("\n") if l.strip()])
+    lines = lyrics.split("\n")
+    line_count = max(len(lines), 1)
     width_ratio = max(0.35, min(0.95, text_box_width_pct / 100))
     box_width = Emu(int(SLIDE_WIDTH * width_ratio))
     line_height_pt = font_size * 1.5
-    box_height = Pt(line_height_pt * max(line_count, 1) + font_size)
+    box_height = Pt(line_height_pt * line_count)
 
     left = (SLIDE_WIDTH - box_width) / 2
     top_center = SLIDE_HEIGHT * (y_pct / 100) - box_height / 2
@@ -114,7 +115,6 @@ def _add_text_box(
 
     r, g, b = _hex_to_rgb(font_color)
 
-    lines = lyrics.split("\n")
     for i, line in enumerate(lines):
         if i == 0:
             p = tf.paragraphs[0]
