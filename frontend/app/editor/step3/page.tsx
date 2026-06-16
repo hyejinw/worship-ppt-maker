@@ -1168,12 +1168,12 @@ export default function Step3() {
 
       {/* 하단 버튼 바 */}
       <div
-        className="flex-shrink-0 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 px-4 sm:px-5 py-4"
+        className="flex-shrink-0 flex flex-row items-center justify-between gap-3 px-4 sm:px-5 py-4"
         style={{ background: "white", borderTop: "1px solid #D8EBD0" }}
       >
         <button
           onClick={() => router.push("/editor/step2")}
-          className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all w-full sm:w-auto"
+          className="inline-flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl text-sm font-semibold transition-all flex-1 sm:flex-none min-w-0"
           style={{ background: "#F2F7F0", border: "1px solid #D8EBD0", color: "#2E5E3E" }}
         >
           <ArrowLeft size={15} />
@@ -1183,7 +1183,7 @@ export default function Step3() {
         <button
           onClick={handleGenerate}
           disabled={generating || slides.length === 0}
-          className="inline-flex items-center justify-center gap-2 px-7 py-2.5 rounded-xl text-sm font-semibold text-white transition-all disabled:opacity-40 w-full sm:w-auto"
+          className="inline-flex items-center justify-center gap-2 px-4 sm:px-7 py-2.5 rounded-xl text-sm font-semibold text-white transition-all disabled:opacity-40 flex-1 sm:flex-none min-w-0"
           style={{ background: "#2E5E3E", boxShadow: slides.length > 0 && !generating ? "0 4px 16px rgba(46,94,62,0.25)" : "none" }}
         >
           {generating ? (
