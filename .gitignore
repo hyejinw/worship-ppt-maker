@@ -20,6 +20,14 @@ backend/__pycache__/
 frontend/node_modules/
 node_modules/
 frontend/.next/
+frontend/.next-build/
+frontend/.next-build*/
+frontend/.next-dev/
+frontend/.next-dev*/
+frontend/.next.broken/
+frontend/.next.runtime-fix*/
+frontend/.next.css-broken-backup*/
+frontend/.next.stale-*/
 .next/
 frontend/tsconfig.tsbuildinfo
 
@@ -32,3 +40,4 @@ frontend/tsconfig.tsbuildinfo
 
 # Misc
 *.log
+backend/debug_logs/

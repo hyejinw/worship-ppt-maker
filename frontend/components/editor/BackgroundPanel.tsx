@@ -24,6 +24,11 @@ const TAB_LABELS: { key: BgTab; label: string }[] = [
   { key: "unsplash", label: "Unsplash" },
 ];
 
+const PANEL_MUTED = "#6B746C";
+const PANEL_SOFT = "#EEF2EC";
+const PANEL_BORDER = "#D6DAD3";
+const PANEL_ACCENT = "#223B2A";
+
 export function BackgroundPanel({
   settings,
   onChange,
@@ -82,21 +87,18 @@ export function BackgroundPanel({
   return (
     <div>
       <div className="relative mb-3">
-        <div className="flex border border-border rounded-lg overflow-hidden">
+        <div className="flex rounded-2xl overflow-hidden p-1" style={{ border: `1px solid ${PANEL_BORDER}`, background: PANEL_SOFT }}>
           {TAB_LABELS.map((t) => (
             <button
               key={t.key}
               onClick={() => t.key !== "unsplash" && handleTabChange(t.key)}
               onMouseEnter={() => t.key === "unsplash" && setUnsplashHovered(true)}
               onMouseLeave={() => t.key === "unsplash" && setUnsplashHovered(false)}
-              className={clsx(
-                "flex-1 py-1.5 text-xs font-medium transition-colors",
-                tab === t.key
-                  ? "bg-accent text-white"
-                  : t.key === "unsplash"
-                  ? "text-text-muted opacity-40 cursor-not-allowed"
-                  : "text-text-muted hover:text-text-primary hover:bg-bg-sub"
-              )}
+              className={clsx("flex-1 py-1.5 rounded-xl text-xs font-semibold transition-colors", t.key === "unsplash" && "opacity-40 cursor-not-allowed")}
+              style={{
+                background: tab === t.key ? PANEL_ACCENT : "transparent",
+                color: tab === t.key ? "#FFFFFF" : PANEL_MUTED,
+              }}
             >
               {t.label}
             </button>
@@ -110,7 +112,7 @@ export function BackgroundPanel({
       </div>
 
       {tab === "black" && (
-        <div className="h-12 rounded-lg bg-black border border-border flex items-center justify-center text-text-muted text-xs">
+        <div className="h-12 rounded-xl bg-black flex items-center justify-center text-xs" style={{ border: `1px solid ${PANEL_BORDER}`, color: "#AAB2AA" }}>
           #000000
         </div>
       )}
@@ -131,17 +133,18 @@ export function BackgroundPanel({
           {uploadedUrl ? (
             <div className="flex flex-col gap-2">
               <div
-                className={clsx(
-                  "h-24 rounded-lg bg-cover bg-center border-2 transition-colors",
-                  isUploadActive ? "border-accent" : "border-border"
-                )}
-                style={{ backgroundImage: `url(${uploadedUrl})` }}
+                className="h-24 rounded-xl bg-cover bg-center border-2 transition-colors"
+                style={{
+                  backgroundImage: `url(${uploadedUrl})`,
+                  borderColor: isUploadActive ? PANEL_ACCENT : PANEL_BORDER,
+                }}
               />
               <div className="flex gap-2">
                 {!isUploadActive && (
                   <button
                     onClick={() => onChange({ bg_type: "image", bg_value: uploadedUrl })}
-                    className="flex-1 py-1.5 text-xs border border-accent text-accent rounded-lg hover:bg-accent/10 transition-colors"
+                    className="flex-1 py-1.5 text-xs font-semibold rounded-xl transition-colors"
+                    style={{ border: `1px solid ${PANEL_ACCENT}`, color: PANEL_ACCENT, background: "#FFFFFF" }}
                   >
                     이 이미지 사용
                   </button>
@@ -149,7 +152,8 @@ export function BackgroundPanel({
                 <button
                   onClick={() => fileInputRef.current?.click()}
                   disabled={uploadLoading}
-                  className="flex-1 py-1.5 text-xs border border-border text-text-muted rounded-lg hover:border-[#555] transition-colors flex items-center justify-center gap-1"
+                  className="flex-1 py-1.5 text-xs font-semibold rounded-xl transition-colors flex items-center justify-center gap-1"
+                  style={{ border: `1px solid ${PANEL_BORDER}`, color: PANEL_MUTED, background: "#FFFFFF" }}
                 >
                   {uploadLoading ? <Loader2 size={12} className="animate-spin" /> : <Upload size={12} />}
                   {uploadLoading ? "업로드 중..." : "교체"}
@@ -160,7 +164,8 @@ export function BackgroundPanel({
             <button
               onClick={() => fileInputRef.current?.click()}
               disabled={uploadLoading}
-              className="w-full border border-dashed border-border rounded-lg py-6 flex flex-col items-center gap-2 text-text-muted hover:border-accent hover:text-accent transition-colors"
+              className="w-full rounded-xl py-6 flex flex-col items-center gap-2 transition-colors"
+              style={{ border: `1px dashed ${PANEL_BORDER}`, color: PANEL_MUTED, background: "#FFFFFF" }}
             >
               {uploadLoading ? <Loader2 size={20} className="animate-spin" /> : <Upload size={20} />}
               <span className="text-xs">{uploadLoading ? "업로드 중..." : "이미지 선택 (JPG/PNG/WebP, 10MB 이하)"}</span>
@@ -170,7 +175,7 @@ export function BackgroundPanel({
       )}
 
       {tab === "unsplash" && (
-        <div className="h-20 rounded-lg border border-dashed border-border flex flex-col items-center justify-center gap-1.5 text-text-muted">
+        <div className="h-20 rounded-xl flex flex-col items-center justify-center gap-1.5" style={{ border: `1px dashed ${PANEL_BORDER}`, color: PANEL_MUTED, background: "#FFFFFF" }}>
           <Clock size={16} />
           <span className="text-xs">Unsplash 검색은 준비 중이에요</span>
         </div>

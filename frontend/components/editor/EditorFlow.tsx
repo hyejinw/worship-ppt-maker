@@ -42,7 +42,7 @@ import {
   Search,
   GripVertical,
   X,
-  Pencil,
+  PencilLine,
   Check,
   XCircle,
   ChevronDown,
@@ -216,12 +216,14 @@ function SortableSongItem({
   song,
   isActive,
   count,
+  step1Redesign = false,
   onSelect,
   onRemove,
 }: {
-  song: { id: string; title: string; artist: string; loading?: boolean; error?: boolean };
+  song: { id: string; title: string; artist: string; loading?: boolean; error?: boolean; source?: string | null };
   isActive: boolean;
   count: number | null;
+  step1Redesign?: boolean;
   onSelect: () => void;
   onRemove: () => void;
 }) {
@@ -232,15 +234,23 @@ function SortableSongItem({
     ? "가사를 찾지 못함"
     : isActive
     ? "현재 편집 중"
+    : step1Redesign && (song.source || song.artist || song.title)
+    ? "가사 로드됨"
     : null;
   const statusColor = song.loading
-    ? isActive
+    ? step1Redesign
+      ? "#4A6B56"
+      : isActive
       ? "rgba(255,255,255,0.78)"
       : "#5BAA72"
     : song.error
-    ? isActive
+    ? step1Redesign
+      ? "#DC2626"
+      : isActive
       ? "rgba(255,255,255,0.78)"
       : "#DC2626"
+    : step1Redesign
+    ? "#4A6B56"
     : isActive
     ? "rgba(255,255,255,0.5)"
     : "#5BAA72";
@@ -254,8 +264,11 @@ function SortableSongItem({
       <div
         className="min-w-0 flex-1 text-left pl-3 pr-2 py-2.5 transition-all flex items-center gap-2"
         style={{
-          background: isActive ? "#2E5E3E" : "transparent",
-          color: isActive ? "white" : "#1a3824",
+          background: step1Redesign ? (isActive ? "#FFFFFF" : "rgba(255,255,255,0.42)") : (isActive ? "#2E5E3E" : "transparent"),
+          color: step1Redesign ? "#131914" : isActive ? "white" : "#1a3824",
+          border: step1Redesign ? `1px solid ${isActive ? "#BFCABF" : "#CDD5CC"}` : "none",
+          borderRadius: step1Redesign ? 16 : 0,
+          boxShadow: step1Redesign && isActive ? "0 10px 24px rgba(20,26,22,0.08)" : "none",
         }}
       >
         <button
@@ -263,8 +276,9 @@ function SortableSongItem({
           {...listeners}
           className="flex-shrink-0 p-1 rounded-lg cursor-grab active:cursor-grabbing transition-colors"
           style={{
-            color: isActive ? "rgba(255,255,255,0.85)" : "#86C59A",
-            background: isActive ? "rgba(255,255,255,0.12)" : "transparent",
+            color: step1Redesign ? "#5C665E" : isActive ? "rgba(255,255,255,0.85)" : "#86C59A",
+            background: step1Redesign ? (isActive ? "#EEF2EC" : "#E7ECE6") : isActive ? "rgba(255,255,255,0.12)" : "transparent",
+            touchAction: "none",
           }}
           aria-label={`${song.title} 순서 변경`}
         >
@@ -277,13 +291,13 @@ function SortableSongItem({
           aria-label={`${song.title} 선택`}
         >
           <div className="flex items-center gap-2 min-w-0">
-            <Music size={12} style={{ color: isActive ? "rgba(255,255,255,0.7)" : "#86C59A", flexShrink: 0 }} />
+            <Music size={12} style={{ color: step1Redesign ? "#5C665E" : isActive ? "rgba(255,255,255,0.7)" : "#86C59A", flexShrink: 0 }} />
             <p className="font-semibold truncate text-sm">{song.title}</p>
           </div>
           {song.artist && (
             <p
               className="text-sm truncate mt-0.5"
-              style={{ color: isActive ? "rgba(255,255,255,0.6)" : "#86C59A" }}
+              style={{ color: step1Redesign ? "#5B645D" : isActive ? "rgba(255,255,255,0.6)" : "#86C59A" }}
             >
               {song.artist}
             </p>
@@ -294,15 +308,18 @@ function SortableSongItem({
             </p>
           )}
           {count !== null && !statusText && (
-            <p className="text-xs mt-0.5" style={{ color: "#5BAA72" }}>{count}슬라이드</p>
+            <p className="text-xs mt-0.5" style={{ color: step1Redesign ? "#5B645D" : "#5BAA72" }}>{count}슬라이드</p>
           )}
         </button>
         <button
           onClick={onRemove}
           className="ml-1 flex-shrink-0 w-7 h-7 rounded-lg grid place-items-center transition-colors"
-          style={{ color: isActive ? "rgba(255,255,255,0.85)" : "#86C59A", background: isActive ? "rgba(255,255,255,0.08)" : "transparent" }}
+          style={{
+            color: step1Redesign ? "#5C665E" : isActive ? "rgba(255,255,255,0.85)" : "#86C59A",
+            background: step1Redesign ? (isActive ? "#EEF2EC" : "transparent") : isActive ? "rgba(255,255,255,0.08)" : "transparent",
+          }}
           onMouseEnter={(e) => (e.currentTarget.style.color = "#dc2626")}
-          onMouseLeave={(e) => (e.currentTarget.style.color = isActive ? "rgba(255,255,255,0.85)" : "#86C59A")}
+          onMouseLeave={(e) => (e.currentTarget.style.color = step1Redesign ? "#5C665E" : isActive ? "rgba(255,255,255,0.85)" : "#86C59A")}
           aria-label={`${song.title} 삭제`}
         >
           <X size={14} />
@@ -334,6 +351,7 @@ function SongSidebar({
   slidesPerSong,
   showCount,
   width,
+  step1Redesign = false,
   onAddSong,
   onRemoveSong,
   onReorderSongs,
@@ -344,12 +362,13 @@ function SongSidebar({
   slidesPerSong: Record<string, { order: number; lyrics: string }[]>;
   showCount: boolean;
   width: number;
+  step1Redesign?: boolean;
   onAddSong?: () => void;
   onRemoveSong: (id: string) => void;
   onReorderSongs: (ids: string[]) => void;
 }) {
   const sensors = useSensors(
-    useSensor(PointerSensor),
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
 
@@ -366,32 +385,77 @@ function SongSidebar({
   return (
     <div
       className="hidden lg:flex flex-shrink-0 flex-col"
-      style={{ width, background: "white", borderRight: "1px solid #D8EBD0" }}
+      style={{
+        width,
+        background: step1Redesign ? "#DDE4DA" : "white",
+        borderRight: step1Redesign ? "1px solid #CCD4CA" : "1px solid #D8EBD0",
+      }}
     >
       {/* 헤더 */}
       <div
-        className="px-4 py-3 flex items-center justify-between"
-        style={{ borderBottom: "1px solid #D8EBD0" }}
+        className={step1Redesign ? "px-5 pt-5 pb-4" : "px-4 py-3 flex items-center justify-between"}
+        style={{ borderBottom: step1Redesign ? "1px solid #C9D1C8" : "1px solid #D8EBD0" }}
       >
-        <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: "#86C59A" }}>
-          곡 목록
-        </p>
-        {onAddSong && (
-          <button
-            onClick={onAddSong}
-            className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all"
-            style={{ background: "rgba(46,94,62,0.08)", color: "#2E5E3E", border: "1px solid rgba(46,94,62,0.15)" }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(46,94,62,0.14)"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(46,94,62,0.08)"; }}
-          >
-            <Plus size={11} />
-            추가
-          </button>
+        {step1Redesign ? (
+          <>
+            <p
+              className="text-xs font-semibold uppercase tracking-widest"
+              style={{ color: "#7D867F" }}
+            >
+              곡 목록
+            </p>
+            <div className="mt-3 flex items-start justify-between gap-3">
+              <p className="text-2xl font-semibold tracking-tight" style={{ color: "#182019" }}>
+                {songs.length}곡
+              </p>
+              {onAddSong && (
+                <button
+                  onClick={onAddSong}
+                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-[11px] font-semibold transition-all"
+                  style={{ background: "#F7F8F5", color: "#1A2C20", border: "1px solid #C7D0C6" }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = "#FFFFFF";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = "#F7F8F5";
+                  }}
+                >
+                  <Plus size={12} />
+                  곡 추가
+                </button>
+              )}
+            </div>
+          </>
+        ) : (
+          <>
+            <p
+              className="text-xs font-semibold uppercase tracking-widest"
+              style={{ color: "#86C59A" }}
+            >
+              곡 목록
+            </p>
+            {onAddSong && (
+              <button
+                onClick={onAddSong}
+                className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all"
+                style={{ background: "rgba(46,94,62,0.08)", color: "#2E5E3E", border: "1px solid rgba(46,94,62,0.15)" }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = "rgba(46,94,62,0.14)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = "rgba(46,94,62,0.08)";
+                }}
+              >
+                <Plus size={11} />
+                추가
+              </button>
+            )}
+          </>
         )}
       </div>
 
       {/* 곡 목록 */}
-      <div className="flex-1 overflow-y-auto p-2 flex flex-col gap-1">
+      <div className={step1Redesign ? "flex-1 overflow-y-auto p-3 flex flex-col gap-2" : "flex-1 overflow-y-auto p-2 flex flex-col gap-1"}>
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleSongDragEnd}>
           <SortableContext items={songs.map((song) => song.id)} strategy={verticalListSortingStrategy}>
             <div className="flex flex-col gap-1">
@@ -401,6 +465,7 @@ function SongSidebar({
                   song={song}
                   isActive={activeSongIndex === i}
                   count={showCount ? (slidesPerSong[song.id] ?? []).length : null}
+                  step1Redesign={step1Redesign}
                   onSelect={() => setActiveSongIndex(i)}
                   onRemove={() => onRemoveSong(song.id)}
                 />
@@ -414,18 +479,22 @@ function SongSidebar({
           <button
             onClick={onAddSong}
             className="w-full text-left px-3 py-3 rounded-xl text-sm transition-all mt-1"
-            style={{
+            style={step1Redesign ? {
+              border: "1px dashed #C8D0C7",
+              color: "#5B645D",
+              background: "rgba(255,255,255,0.42)",
+            } : {
               border: "1.5px dashed #D8EBD0",
               color: "#86C59A",
               background: "transparent",
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor = "#2E5E3E";
-              e.currentTarget.style.color = "#2E5E3E";
+              e.currentTarget.style.borderColor = step1Redesign ? "#BFCABF" : "#2E5E3E";
+              e.currentTarget.style.color = step1Redesign ? "#1A2C20" : "#2E5E3E";
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.borderColor = "#D8EBD0";
-              e.currentTarget.style.color = "#86C59A";
+              e.currentTarget.style.borderColor = step1Redesign ? "#C8D0C7" : "#D8EBD0";
+              e.currentTarget.style.color = step1Redesign ? "#5B645D" : "#86C59A";
             }}
           >
             <div className="flex items-center gap-2">
@@ -440,15 +509,17 @@ function SongSidebar({
       </div>
 
       {/* Tip */}
-      <div
-        className="mx-2 mb-2 px-3 py-3 rounded-xl"
-        style={{ background: "#F2F7F0", border: "1px solid #D8EBD0" }}
-      >
-        <p className="text-sm font-semibold mb-1" style={{ color: "#5BAA72" }}>💡 Tip</p>
-        <p className="text-sm leading-relaxed" style={{ color: "#86C59A" }}>
-          가사를 클릭하면<br />수정할 수 있어요.
-        </p>
-      </div>
+      {!step1Redesign && (
+        <div
+          className="mx-2 mb-2 px-3 py-3 rounded-xl"
+          style={{ background: "#F2F7F0", border: "1px solid #D8EBD0" }}
+        >
+          <p className="text-sm font-semibold mb-1" style={{ color: "#5BAA72" }}>💡 Tip</p>
+          <p className="text-sm leading-relaxed" style={{ color: "#86C59A" }}>
+            가사를 클릭하면<br />수정할 수 있어요.
+          </p>
+        </div>
+      )}
     </div>
   );
 }
@@ -460,6 +531,7 @@ function MobileSongSwitcher({
   slidesPerSong,
   showCount,
   showAddSong,
+  step1Redesign = false,
   isOpen,
   onToggle,
   onAddSong,
@@ -472,6 +544,7 @@ function MobileSongSwitcher({
   slidesPerSong: Record<string, { order: number; lyrics: string }[]>;
   showCount: boolean;
   showAddSong: boolean;
+  step1Redesign?: boolean;
   isOpen: boolean;
   onToggle: () => void;
   onAddSong: () => void;
@@ -479,7 +552,7 @@ function MobileSongSwitcher({
   onReorderSongs: (ids: string[]) => void;
 }) {
   const sensors = useSensors(
-    useSensor(PointerSensor),
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
 
@@ -494,14 +567,20 @@ function MobileSongSwitcher({
   };
 
   return (
-    <div className="lg:hidden" style={{ background: "white", borderBottom: "1px solid #D8EBD0" }}>
+    <div
+      className="lg:hidden"
+      style={{
+        background: step1Redesign ? "#DDE4DA" : "white",
+        borderBottom: step1Redesign ? "1px solid #CCD4CA" : "1px solid #D8EBD0",
+      }}
+    >
       <div className="px-4 pt-3 pb-2">
         <div className="flex items-center justify-between gap-3 mb-2">
           <div className="min-w-0">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em]" style={{ color: "#86C59A" }}>
-              Selected Songs
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em]" style={{ color: step1Redesign ? "#7D867F" : "#86C59A" }}>
+              {step1Redesign ? "곡 목록" : "Selected Songs"}
             </p>
-            <p className="text-sm font-semibold truncate" style={{ color: "#1a3824" }}>
+            <p className="text-sm font-semibold truncate" style={{ color: step1Redesign ? "#182019" : "#1a3824" }}>
               {songs.length}곡 선택됨
             </p>
           </div>
@@ -510,7 +589,7 @@ function MobileSongSwitcher({
               <button
                 onClick={onAddSong}
                 className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold"
-                style={{ background: "#E4F1E1", color: "#2E5E3E", border: "1px solid #CFE3C8" }}
+                style={step1Redesign ? { background: "#F7F8F5", color: "#1A2C20", border: "1px solid #C7D0C6" } : { background: "#E4F1E1", color: "#2E5E3E", border: "1px solid #CFE3C8" }}
               >
                 <Plus size={12} />
                 곡 추가
@@ -520,7 +599,7 @@ function MobileSongSwitcher({
               <button
                 onClick={onToggle}
                 className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold shrink-0"
-                style={{ background: "#F2F7F0", border: "1px solid #D8EBD0", color: "#2E5E3E" }}
+                style={step1Redesign ? { background: "#F2F7F0", border: "1px solid #D8EBD0", color: "#2E5E3E" } : { background: "#F2F7F0", border: "1px solid #D8EBD0", color: "#2E5E3E" }}
               >
                 <GripVertical size={12} />
                 순서 편집
@@ -541,10 +620,10 @@ function MobileSongSwitcher({
                   onClick={() => setActiveSongIndex(i)}
                   className="inline-flex items-center gap-2 px-3 py-2 rounded-2xl text-xs font-semibold transition-all max-w-[13rem] shrink-0"
                   style={{
-                    background: isActive ? "#2E5E3E" : "#F6FBF4",
-                    color: isActive ? "white" : "#2E5E3E",
-                    border: `1px solid ${isActive ? "#2E5E3E" : "#D8EBD0"}`,
-                    boxShadow: isActive ? "0 8px 18px rgba(46,94,62,0.2)" : "none",
+                    background: step1Redesign ? (isActive ? "#FFFFFF" : "rgba(255,255,255,0.42)") : isActive ? "#2E5E3E" : "#F6FBF4",
+                    color: step1Redesign ? "#151A16" : isActive ? "white" : "#2E5E3E",
+                    border: step1Redesign ? `1px solid ${isActive ? "#BCC7BC" : "#CCD4CA"}` : `1px solid ${isActive ? "#2E5E3E" : "#D8EBD0"}`,
+                    boxShadow: step1Redesign ? "none" : isActive ? "0 8px 18px rgba(46,94,62,0.2)" : "none",
                   }}
                 >
                   <Music size={12} />
@@ -553,8 +632,8 @@ function MobileSongSwitcher({
                     <span
                       className="px-1.5 py-0.5 rounded-full text-[10px] font-bold"
                       style={{
-                        background: isActive ? "rgba(255,255,255,0.16)" : "rgba(46,94,62,0.1)",
-                        color: isActive ? "white" : "#2E5E3E",
+                        background: step1Redesign ? "#EEF2EC" : isActive ? "rgba(255,255,255,0.16)" : "rgba(46,94,62,0.1)",
+                        color: step1Redesign ? "#2E5E3E" : isActive ? "white" : "#2E5E3E",
                       }}
                     >
                       {count}
@@ -569,10 +648,10 @@ function MobileSongSwitcher({
 
       {isOpen && songs.length > 1 && (
         <div className="px-3 pb-3">
-          <div
-            className="rounded-[20px] overflow-hidden shadow-sm"
-            style={{ background: "#FCFEFA", border: "1px solid #D8EBD0" }}
-          >
+            <div
+              className="rounded-[20px] overflow-hidden shadow-sm"
+              style={{ background: step1Redesign ? "#FCFEFA" : "#FCFEFA", border: "1px solid #D8EBD0" }}
+            >
             <div
               className="px-4 py-3 flex items-center justify-between gap-3"
               style={{ borderBottom: "1px solid #D8EBD0" }}
@@ -593,6 +672,7 @@ function MobileSongSwitcher({
                         song={song}
                         isActive={activeSongIndex === i}
                         count={showCount ? (slidesPerSong[song.id] ?? []).length : null}
+                        step1Redesign={step1Redesign}
                         onSelect={() => setActiveSongIndex(i, { closeTray: true })}
                         onRemove={() => onRemoveSong(song.id)}
                       />
@@ -612,6 +692,12 @@ function MobileSongSwitcher({
 function RightPanel({
   song,
   width,
+  step1Redesign = false,
+  onPrimaryAction,
+  primaryActionLabel,
+  primaryActionIcon,
+  primaryActionDisabled = false,
+  lyricsActionsDisabled = false,
   onRestoreOriginal,
   onRemoveDuplicates,
   onRenumberLines,
@@ -621,6 +707,12 @@ function RightPanel({
 }: {
   song: { title: string; artist: string; source?: string | null } | undefined;
   width: number;
+  step1Redesign?: boolean;
+  onPrimaryAction?: () => void;
+  primaryActionLabel?: string;
+  primaryActionIcon?: React.ReactNode;
+  primaryActionDisabled?: boolean;
+  lyricsActionsDisabled?: boolean;
   onRestoreOriginal: () => void;
   onRemoveDuplicates: () => void;
   onRenumberLines: () => void;
@@ -649,33 +741,69 @@ function RightPanel({
 
   return (
     <div
-      className="hidden lg:flex flex-col flex-shrink-0 overflow-y-auto"
-      style={{ width, background: "white" }}
+      className={`hidden xl:flex flex-col flex-shrink-0 overflow-y-auto px-5 py-5 ${step1Redesign ? "gap-3" : "gap-5"}`}
+      style={{ width, background: step1Redesign ? "transparent" : "white" }}
     >
+      {step1Redesign && onPrimaryAction && primaryActionLabel && (
+        <div
+          className="rounded-[28px] p-5"
+          style={{ background: "#F8F8F5", border: "1px solid #D6DAD3", boxShadow: "0 18px 42px rgba(20,26,22,0.06)" }}
+        >
+          <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: "#7D867F" }}>
+            다음 단계
+          </p>
+          <h3 className="text-[20px] font-semibold mt-2 tracking-[-0.02em]" style={{ color: "#151A16" }}>
+            가사를 확인했다면 다음 단계
+          </h3>
+          <button
+            onClick={onPrimaryAction}
+            disabled={primaryActionDisabled}
+            className="mt-5 w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-[20px] text-[13px] sm:text-sm font-semibold text-white disabled:opacity-40"
+            style={{ background: "#223B2A" }}
+          >
+            {primaryActionIcon}
+            {primaryActionLabel}
+          </button>
+        </div>
+      )}
+
       {/* 가사 관리 */}
-      <div className="px-4 pt-4 pb-3" style={{ borderBottom: "1px solid #F2F7F0" }}>
-        <p className="text-xs font-semibold uppercase tracking-widest mb-2.5" style={{ color: "#86C59A" }}>
+      <div
+        className={step1Redesign ? "rounded-[28px] p-5" : "px-4 pt-4 pb-3"}
+        style={step1Redesign ? { background: "#F8F8F5", border: "1px solid #D6DAD3", boxShadow: "0 18px 42px rgba(20,26,22,0.06)" } : { borderBottom: "1px solid #F2F7F0" }}
+      >
+        <p className="text-xs font-semibold uppercase tracking-widest mb-2.5" style={{ color: step1Redesign ? "#7D867F" : "#86C59A" }}>
           가사 관리
         </p>
-        <div className="flex flex-col gap-0.5">
+        {step1Redesign && (
+          <h3 className="text-[20px] font-semibold mt-2 tracking-[-0.02em]" style={{ color: "#151A16" }}>
+            빠른 정리 도구
+          </h3>
+        )}
+        <div className={step1Redesign ? "mt-5 flex flex-col gap-3" : "flex flex-col gap-0.5"}>
           {lyricsItems.map((item) => (
             <button
               key={item.label}
-              onClick={item.onClick}
-              className="flex items-center gap-2.5 px-2 py-2 rounded-lg text-sm transition-all w-full text-left"
-              style={{ color: "#4a7a56" }}
-              onMouseEnter={(e) => { e.currentTarget.style.background = "#F2F7F0"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
+              onClick={lyricsActionsDisabled ? undefined : item.onClick}
+              disabled={lyricsActionsDisabled}
+              className={step1Redesign ? "rounded-2xl px-4 py-3 text-left text-[13px] font-semibold transition-all w-full disabled:cursor-not-allowed" : "flex items-center gap-2.5 px-2 py-2 rounded-lg text-sm transition-all w-full text-left disabled:cursor-not-allowed"}
+              style={step1Redesign ? { background: "#FFFFFF", color: lyricsActionsDisabled ? "#A5ACA6" : "#253029", border: "1px solid #D6DAD3", opacity: lyricsActionsDisabled ? 0.58 : 1 } : { color: lyricsActionsDisabled ? "#B8DBBF" : "#4a7a56", opacity: lyricsActionsDisabled ? 0.58 : 1 }}
+              onMouseEnter={(e) => { if (!step1Redesign) e.currentTarget.style.background = "#F2F7F0"; }}
+              onMouseLeave={(e) => { if (!step1Redesign) e.currentTarget.style.background = "transparent"; }}
             >
-              <span style={{ color: "#86C59A" }}>{item.icon}</span>
-              {item.label}
+              {step1Redesign ? item.label.replace("원본 가사로 되돌리기", "원본 복원").replace("줄 번호 재정렬", "줄 번호 정리").replace("영어 가사 삭제", "영어 삭제") : (
+                <>
+                  <span style={{ color: "#86C59A" }}>{item.icon}</span>
+                  {item.label}
+                </>
+              )}
             </button>
           ))}
         </div>
       </div>
 
       {/* 곡 정보 */}
-      {song && (
+      {song && !step1Redesign && (
         <div className="px-4 py-3">
           <p className="text-xs font-semibold uppercase tracking-widest mb-2.5" style={{ color: "#86C59A" }}>
             곡 정보
@@ -690,6 +818,7 @@ function RightPanel({
           </div>
         </div>
       )}
+
     </div>
   );
 }
@@ -698,13 +827,17 @@ function RightPanel({
 function LyricsEditor({
   songId,
   text,
+  step1Redesign = false,
   onChange,
   onUndo,
+  onActivate,
 }: {
   songId: string;
   text: string;
+  step1Redesign?: boolean;
   onChange: (t: string) => void;
   onUndo: () => void;
+  onActivate?: () => void;
 }) {
   const numRef = useRef<HTMLDivElement>(null);
   const taRef = useRef<HTMLTextAreaElement>(null);
@@ -717,18 +850,18 @@ function LyricsEditor({
   };
 
   return (
-    <div className="flex-1 flex min-h-0 overflow-hidden">
+    <div className="flex-1 h-full min-h-0 flex overflow-hidden">
       {/* 줄 번호 열 */}
       <div
         ref={numRef}
-        className="overflow-hidden flex-shrink-0 select-none py-5 pr-2 pl-4"
-        style={{ background: 'white', width: 52 }}
+        className={step1Redesign ? "overflow-hidden flex-shrink-0 select-none py-5 pr-1.5 pl-1.5 sm:pr-2.5 sm:pl-2.5" : "overflow-hidden flex-shrink-0 select-none py-5 pr-2 pl-4"}
+        style={{ background: step1Redesign ? "#F7F7F3" : 'white', width: step1Redesign ? 42 : 52, borderRight: step1Redesign ? "1px solid #E3E6E0" : "none" }}
       >
         {lines.map((_, i) => (
           <div
             key={i}
             className="font-mono text-xs text-right"
-            style={{ color: '#B8DBBF', lineHeight: '1.625rem' }}
+            style={{ color: step1Redesign ? "#8A928B" : '#B8DBBF', lineHeight: '1.625rem' }}
           >
             {String(i + 1).padStart(2, '0')}
           </div>
@@ -740,6 +873,8 @@ function LyricsEditor({
         key={songId}
         value={text}
         onChange={(e) => onChange(e.target.value)}
+        onFocus={onActivate}
+        onClick={onActivate}
         onScroll={syncScroll}
         onKeyDown={(e) => {
           if ((e.metaKey || e.ctrlKey) && e.key === 'z') {
@@ -747,12 +882,12 @@ function LyricsEditor({
             onUndo();
           }
         }}
-        className="flex-1 py-5 pr-6 text-sm resize-none focus:outline-none"
+        className={step1Redesign ? "flex-1 h-full min-h-0 py-5 pr-5 sm:pr-6 text-[15px] sm:text-[16px] resize-none focus:outline-none" : "flex-1 py-5 pr-6 text-sm resize-none focus:outline-none"}
         style={{
           background: 'white',
-          color: '#1a3824',
+          color: step1Redesign ? "#161C17" : '#1a3824',
           lineHeight: '1.625rem',
-          paddingLeft: 4,
+          paddingLeft: step1Redesign ? 20 : 4,
           overflowY: 'auto',
         }}
         spellCheck={false}
@@ -768,6 +903,8 @@ function SongSearchPanel({
   songsCount,
   searchLocked,
   showCancelSearch,
+  step1Redesign = false,
+  showCloseButton = false,
   resultSong,
   inputRef,
   artistInputRef,
@@ -775,12 +912,15 @@ function SongSearchPanel({
   onArtistChange,
   onAddSong,
   onCancelSearch,
+  onClose,
 }: {
   query: string;
   artist: string;
   songsCount: number;
   searchLocked: boolean;
   showCancelSearch: boolean;
+  step1Redesign?: boolean;
+  showCloseButton?: boolean;
   resultSong: {
     id: string;
     title: string;
@@ -796,6 +936,7 @@ function SongSearchPanel({
   onArtistChange: (value: string) => void;
   onAddSong: () => void;
   onCancelSearch: () => void;
+  onClose?: () => void;
 }) {
   const queryComposingRef = useRef(false);
 
@@ -822,28 +963,47 @@ function SongSearchPanel({
   };
 
   return (
-    <div className="flex-1 overflow-y-auto px-4 sm:px-5 py-5 sm:py-6" style={{ background: "#F2F7F0" }}>
-      <div className="mx-auto w-full max-w-xl">
-        <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-start sm:gap-4">
-          <h2 className="shrink-0 text-2xl sm:text-3xl font-extrabold tracking-tight leading-none" style={{ color: "#1a3824" }}>
-            곡 선택
-          </h2>
-          <p className="sm:ml-auto text-left sm:text-right text-sm leading-relaxed max-w-[23rem] pt-1" style={{ color: "#5BAA72" }}>
-            아티스트를 함께 입력하면 더 정확하게 찾을 수 있어요.
-          </p>
-        </div>
+    <div className={step1Redesign ? "w-full" : "flex-1 overflow-y-auto px-4 sm:px-5 py-5 sm:py-6"} style={{ background: step1Redesign ? "transparent" : "#F2F7F0" }}>
+      <div className={step1Redesign ? "w-full" : "mx-auto w-full max-w-xl"}>
+        {!step1Redesign && (
+          <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-start sm:gap-4">
+            <h2 className="shrink-0 text-2xl sm:text-3xl font-extrabold tracking-tight leading-none" style={{ color: "#1a3824" }}>
+              곡 선택
+            </h2>
+            <p className="sm:ml-auto text-left sm:text-right text-sm leading-relaxed max-w-[23rem] pt-1" style={{ color: "#5BAA72" }}>
+              아티스트를 함께 입력하면 더 정확하게 찾을 수 있어요.
+            </p>
+          </div>
+        )}
 
         <div
-          className="rounded-2xl p-5 mb-4"
-          style={{ background: "white", border: "1px solid #D8EBD0", boxShadow: "0 2px 16px rgba(46,94,62,0.06)" }}
+          className={step1Redesign ? "rounded-[28px] p-5 sm:p-6" : "rounded-2xl p-5 mb-4"}
+          style={step1Redesign ? { background: "#F8F8F5", border: "1px solid #D6DAD3", boxShadow: "0 18px 48px rgba(20,26,22,0.08)" } : { background: "white", border: "1px solid #D8EBD0", boxShadow: "0 2px 16px rgba(46,94,62,0.06)" }}
         >
-          <div className="flex items-center justify-between mb-3">
-            <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: "#86C59A" }}>곡 검색</p>
-            <p className="text-xs" style={{ color: "#86C59A" }}>최대 10곡</p>
+          <div className={step1Redesign ? "flex items-end justify-between gap-3 mb-4" : "flex items-center justify-between mb-3"}>
+            <div>
+              <p className={step1Redesign ? "text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.16em]" : "text-xs font-semibold uppercase tracking-widest"} style={{ color: step1Redesign ? "#7D867F" : "#86C59A" }}>곡 검색</p>
+              {step1Redesign && <p className="text-[13px] sm:text-sm mt-1" style={{ color: "#616A62" }}>아티스트를 함께 입력하면 더 정확하게 찾을 수 있어요.</p>}
+            </div>
+            {step1Redesign && showCloseButton ? (
+              <div className="flex items-center gap-3 shrink-0">
+                <p className="text-[11px] sm:text-xs font-medium" style={{ color: "#7B857C" }}>최대 10곡</p>
+                <button
+                  onClick={onClose}
+                  className="w-8 h-8 rounded-xl grid place-items-center"
+                  style={{ background: "#EBEEEA", color: "#4F5C52" }}
+                  aria-label="검색 닫기"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+            ) : (
+              <p className={step1Redesign ? "text-[11px] sm:text-xs font-medium shrink-0" : "text-xs"} style={{ color: step1Redesign ? "#7B857C" : "#86C59A" }}>최대 10곡</p>
+            )}
           </div>
-          <div className="flex gap-2 mb-3">
+          <div className={step1Redesign ? "grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_220px_auto] gap-3 mb-0" : "flex gap-2 mb-3"}>
             <div className="relative flex-1">
-              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: "#86C59A" }} />
+              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: step1Redesign ? "#6B746C" : "#86C59A" }} />
               <input
                 ref={inputRef}
                 type="text"
@@ -859,50 +1019,50 @@ function SongSearchPanel({
                 }}
                 placeholder="곡명 (예: 베드로의 고백)"
                 disabled={songsCount >= 10}
-                className="w-full rounded-xl pl-9 pr-4 py-2.5 text-sm transition-colors"
+                className={step1Redesign ? "w-full rounded-[20px] pl-9 pr-4 py-3.5 text-[13px] sm:text-sm transition-colors" : "w-full rounded-xl pl-9 pr-4 py-2.5 text-sm transition-colors"}
                 style={{
-                  background: "#F2F7F0",
-                  border: "1px solid #D8EBD0",
-                  color: "#1a3824",
+                  background: step1Redesign ? "#FFFFFF" : "#F2F7F0",
+                  border: step1Redesign ? "1px solid #CDD3CC" : "1px solid #D8EBD0",
+                  color: step1Redesign ? "#151A16" : "#1a3824",
                   outline: "none",
                 }}
                 onFocus={(e) => (e.currentTarget.style.borderColor = "#2E5E3E")}
-                onBlur={(e) => (e.currentTarget.style.borderColor = "#D8EBD0")}
+                onBlur={(e) => (e.currentTarget.style.borderColor = step1Redesign ? "#CDD3CC" : "#D8EBD0")}
               />
             </div>
+            <input
+              ref={artistInputRef}
+              type="text"
+              value={artist}
+              onChange={(e) => onArtistChange(e.target.value)}
+              onKeyDown={handleArtistKeyDown}
+              onKeyUp={handleKeyUp}
+              placeholder="아티스트 (선택)"
+              disabled={songsCount >= 10}
+              className={step1Redesign ? "w-full rounded-[20px] px-4 py-3.5 text-[13px] sm:text-sm transition-colors" : "w-full sm:w-52 rounded-xl px-3 py-2 text-sm transition-colors"}
+              style={{
+                background: step1Redesign ? "#FFFFFF" : "#F2F7F0",
+                border: step1Redesign ? "1px solid #CDD3CC" : "1px solid #D8EBD0",
+                color: step1Redesign ? "#151A16" : "#1a3824",
+                outline: "none",
+              }}
+              onFocus={(e) => (e.currentTarget.style.borderColor = "#2E5E3E")}
+              onBlur={(e) => (e.currentTarget.style.borderColor = step1Redesign ? "#CDD3CC" : "#D8EBD0")}
+            />
             <button
               onClick={onAddSong}
               disabled={!query.trim() || songsCount >= 10 || searchLocked}
-              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-semibold text-white transition-all shrink-0 disabled:opacity-40"
-              style={{ background: "#2E5E3E" }}
+              className={step1Redesign ? "inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-[20px] text-[13px] sm:text-sm font-semibold text-white transition-all shrink-0 disabled:opacity-40" : "inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-semibold text-white transition-all shrink-0 disabled:opacity-40"}
+              style={{ background: step1Redesign ? "#223B2A" : "#2E5E3E" }}
             >
               <Plus size={15} strokeWidth={2.5} />
-              <span className="hidden sm:inline">추가</span>
+              <span className={step1Redesign ? "" : "hidden sm:inline"}>{step1Redesign ? "곡 추가" : "추가"}</span>
             </button>
           </div>
-          <input
-            ref={artistInputRef}
-            type="text"
-            value={artist}
-            onChange={(e) => onArtistChange(e.target.value)}
-            onKeyDown={handleArtistKeyDown}
-            onKeyUp={handleKeyUp}
-            placeholder="아티스트 (선택)"
-            disabled={songsCount >= 10}
-              className="w-full sm:w-52 rounded-xl px-3 py-2 text-sm transition-colors"
-            style={{
-              background: "#F2F7F0",
-              border: "1px solid #D8EBD0",
-              color: "#1a3824",
-              outline: "none",
-            }}
-            onFocus={(e) => (e.currentTarget.style.borderColor = "#2E5E3E")}
-            onBlur={(e) => (e.currentTarget.style.borderColor = "#D8EBD0")}
-          />
         </div>
 
-        {resultSong && (
-          <div className="rounded-2xl overflow-hidden" style={{ background: "white", border: "1px solid #D8EBD0" }}>
+        {resultSong && !step1Redesign && (
+          <div className={step1Redesign ? "rounded-[28px] overflow-hidden" : "rounded-2xl overflow-hidden"} style={{ background: step1Redesign ? "#F8F8F5" : "white", border: step1Redesign ? "1px solid #D6DAD3" : "1px solid #D8EBD0" }}>
             <div className="px-5 py-3 flex items-center justify-between" style={{ borderBottom: "1px solid #F2F7F0" }}>
               <div className="min-w-0">
                 <p className="text-sm font-bold truncate" style={{ color: "#1a3824" }}>{resultSong.title}</p>
@@ -931,14 +1091,11 @@ function SongSearchPanel({
               </div>
             ) : (
               <div className="px-5 py-5">
-                <p className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: "#86C59A" }}>
-                  검색된 가사
-                </p>
                 <textarea
                   value={resultSong.lyrics ?? ""}
                   readOnly
-                  className="w-full min-h-[320px] rounded-xl px-4 py-3 text-sm resize-y focus:outline-none"
-                  style={{ background: "#F2F7F0", border: "1px solid #D8EBD0", color: "#1a3824", lineHeight: 1.7 }}
+                  className={step1Redesign ? "w-full min-h-[320px] rounded-[24px] px-5 py-5 text-[15px] resize-y focus:outline-none" : "w-full min-h-[320px] rounded-xl px-4 py-3 text-sm resize-y focus:outline-none"}
+                  style={{ background: step1Redesign ? "#FFFFFF" : "#F2F7F0", border: step1Redesign ? "1px solid #D6DAD3" : "1px solid #D8EBD0", color: "#1a3824", lineHeight: 1.7 }}
                 />
                 <p className="text-xs mt-2" style={{ color: "#5BAA72" }}>
                   수정하려면 왼쪽 곡 목록에서 곡명을 누르세요.
@@ -994,8 +1151,13 @@ function EditorFlowInner({
   const [searchStartedAt, setSearchStartedAt] = useState<number | null>(null);
   const [showCancelSearch, setShowCancelSearch] = useState(false);
   const [showLyricsNotice, setShowLyricsNotice] = useState(true);
+  const [showMobileTools, setShowMobileTools] = useState(false);
+  const [showMobileSlideList, setShowMobileSlideList] = useState(true);
+  const [activeLyricsEditorSongId, setActiveLyricsEditorSongId] = useState<string | null>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const artistInputRef = useRef<HTMLInputElement>(null);
+  const desktopSearchInputRef = useRef<HTMLInputElement>(null);
+  const desktopArtistInputRef = useRef<HTMLInputElement>(null);
   const titleInputRef = useRef<HTMLInputElement>(null);
   const searchRequestSeqRef = useRef(0);
 
@@ -1085,6 +1247,19 @@ function EditorFlowInner({
     setSongLyrics(songId, text, song?.source ?? null);
   };
 
+  const focusSearchTitleInput = useCallback(() => {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        const desktop = window.matchMedia("(min-width: 1280px)").matches;
+        const target = desktop
+          ? desktopSearchInputRef.current ?? searchInputRef.current
+          : searchInputRef.current ?? desktopSearchInputRef.current;
+        target?.scrollIntoView({ block: "center", behavior: "smooth" });
+        target?.focus();
+      });
+    });
+  }, []);
+
   const openSearchPanel = () => {
     setMode("lyrics");
     setShowSearchPanel(true);
@@ -1094,7 +1269,7 @@ function EditorFlowInner({
       setSearchArtist("");
       setSearchResultSongId(null);
     }
-    setTimeout(() => searchInputRef.current?.focus(), 0);
+    focusSearchTitleInput();
   };
 
   const selectSong = (index: number, options?: { closeTray?: boolean }) => {
@@ -1174,7 +1349,7 @@ function EditorFlowInner({
         setSearchStartedAt(null);
         setShowCancelSearch(false);
       }
-      setTimeout(() => searchInputRef.current?.focus(), 0);
+      focusSearchTitleInput();
     }
   };
 
@@ -1400,9 +1575,10 @@ function EditorFlowInner({
   const handleDragEnd = (songId: string, event: DragEndEvent) => {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
-    const ids = slideIds[songId] ?? [];
+    const ids = getSlideIdsForSong(songId);
     const oldIndex = ids.indexOf(active.id as string);
     const newIndex = ids.indexOf(over.id as string);
+    if (oldIndex < 0 || newIndex < 0) return;
     const newIds = arrayMove(ids, oldIndex, newIndex);
     const currentSlides = slidesPerSong[songId] ?? [];
     const newSlides = newIds.map((id, i) => {
@@ -1447,10 +1623,63 @@ function EditorFlowInner({
   const activeSong = songs[activeSongIndex];
   const totalSlides = Object.values(slidesPerSong).reduce((acc, s) => acc + s.length, 0);
   const showMobileAddSong = headerStep === 1 && mode === "lyrics";
+  const step1Redesign = headerStep === 1 && availableModes.length === 1 && availableModes[0] === "lyrics" && !showModeTabs;
+  const step2Redesign = headerStep === 2 && availableModes.length === 1 && availableModes[0] === "slides" && !showModeTabs;
+  const step1MobileNeedsPageScroll = step1Redesign;
+  const step2MobileNeedsPageScroll = step2Redesign;
+  const pageScrollClass = step1Redesign
+    ? "overflow-y-auto overflow-x-hidden"
+    : step2MobileNeedsPageScroll
+    ? "overflow-y-auto overflow-x-hidden xl:overflow-hidden"
+    : "overflow-hidden";
+  const canProceedToSlides =
+    songs.length > 0 &&
+    songs.every((song) => song.title.trim().length > 0 && (editedLyrics[song.id] ?? "").trim().length > 0) &&
+    !searchInFlight &&
+    !aiLoading;
+  const canUseLyricsActions =
+    !!activeSong &&
+    !activeSong.loading &&
+    (editedLyrics[activeSong.id] ?? "").trim().length > 0 &&
+    activeLyricsEditorSongId === activeSong.id;
+
+  const getSlideIdsForSong = (songId: string) => {
+    const slides = slidesPerSong[songId] ?? [];
+    const ids = slideIds[songId];
+    if (ids && ids.length === slides.length) return ids;
+    return slides.map((_, i) => `${songId}-slide-${i}`);
+  };
 
   useEffect(() => {
     setIsEditingTitle(false);
     setTitleDraft(activeSong?.title ?? "");
+    setActiveLyricsEditorSongId(null);
+  }, [activeSong?.id]);
+
+  useEffect(() => {
+    setSlideIds((prev) => {
+      let changed = false;
+      const next = { ...prev };
+      for (const song of songs) {
+        const slides = slidesPerSong[song.id] ?? [];
+        const ids = prev[song.id];
+        if (!ids || ids.length !== slides.length) {
+          next[song.id] = slides.map((_, i) => `${song.id}-slide-${i}`);
+          changed = true;
+        }
+      }
+      return changed ? next : prev;
+    });
+  }, [songs, slidesPerSong]);
+
+  useEffect(() => {
+    if (!showSearchPanel || !step1Redesign) return;
+    focusSearchTitleInput();
+  }, [showSearchPanel, step1Redesign, focusSearchTitleInput]);
+
+  useEffect(() => {
+    if (activeSong) return;
+    setShowMobileTools(false);
   }, [activeSong?.id]);
 
   useEffect(() => {
@@ -1498,7 +1727,10 @@ function EditorFlowInner({
   };
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden" style={{ background: "#F2F7F0" }}>
+    <div
+      className={`h-screen flex flex-col ${pageScrollClass}`}
+      style={{ background: step1Redesign || step2Redesign ? "#ECEEE9" : "#F2F7F0" }}
+    >
       <Header step={headerStep} />
 
       {showModeTabs && availableModes.length > 1 ? (
@@ -1550,6 +1782,7 @@ function EditorFlowInner({
           slidesPerSong={slidesPerSong}
           showCount={mode === "slides"}
           showAddSong={showMobileAddSong}
+          step1Redesign={step1Redesign || step2Redesign}
           isOpen={showSongList}
           onToggle={() => setShowSongList((v) => !v)}
           onAddSong={openSearchPanel}
@@ -1559,7 +1792,7 @@ function EditorFlowInner({
       )}
 
       {/* Main content */}
-      <main className="flex-1 flex overflow-hidden min-h-0">
+      <main className={step1Redesign ? `flex-none flex flex-col xl:grid xl:grid-cols-[280px_minmax(0,1fr)_320px] ${showMobileTools || showSongList ? "pb-72 sm:pb-64" : "pb-44 sm:pb-48"} xl:pb-32` : step2Redesign ? "flex-none xl:flex-1 xl:min-h-0 flex flex-col xl:grid xl:grid-cols-[280px_minmax(0,1fr)_360px] pb-72 sm:pb-64 xl:pb-24" : "flex-1 flex overflow-hidden min-h-0"}>
 
         {/* ── 가사 검색 모드 ── */}
         {availableModes.includes("lyrics") && mode === "lyrics" && (
@@ -1570,178 +1803,371 @@ function EditorFlowInner({
               setActiveSongIndex={selectSong}
               slidesPerSong={slidesPerSong}
               showCount={false}
-              width={sidebarLyrics.size}
+              width={step1Redesign ? 280 : sidebarLyrics.size}
+              step1Redesign={step1Redesign}
               onAddSong={openSearchPanel}
               onRemoveSong={handleRemoveSong}
               onReorderSongs={handleReorderSongs}
             />
-            <div className="hidden lg:block">
-              <Divider onMouseDown={sidebarLyrics.onMouseDown} />
-            </div>
+            {!step1Redesign && (
+              <div className="hidden lg:block">
+                <Divider onMouseDown={sidebarLyrics.onMouseDown} />
+              </div>
+            )}
 
-            {/* 가운데: 가사 내용 */}
-            <div className="flex-1 flex flex-col min-w-0 relative" style={{ background: "white" }}>
+            <section className={step1Redesign ? "min-w-0 flex flex-col" : "flex-1 flex flex-col min-w-0 relative"} style={{ background: step1Redesign ? "transparent" : "white" }}>
+              {step1Redesign ? (
+                <div className="flex-1 px-4 sm:px-6 py-5 sm:py-6 overflow-visible">
+                  <div className="max-w-7xl mx-auto flex flex-col gap-5">
+                    {(showSearchPanel || !activeSong) && (
+                      <div className="xl:hidden">
+                        <SongSearchPanel
+                          query={searchQuery}
+                          artist={searchArtist}
+                          songsCount={songs.length}
+                          searchLocked={searchInFlight}
+                          showCancelSearch={showCancelSearch}
+                          step1Redesign
+                          showCloseButton={!!activeSong}
+                          resultSong={undefined}
+                          inputRef={searchInputRef}
+                          artistInputRef={artistInputRef}
+                          onQueryChange={setSearchQuery}
+                          onArtistChange={setSearchArtist}
+                          onAddSong={handleAddSongFromSearch}
+                          onCancelSearch={handleCancelSearch}
+                          onClose={() => setShowSearchPanel(false)}
+                        />
+                      </div>
+                    )}
 
-              {showSearchPanel || !activeSong ? (
-                <SongSearchPanel
-                  query={searchQuery}
-                  artist={searchArtist}
-                  songsCount={songs.length}
-                  searchLocked={searchInFlight}
-                  showCancelSearch={showCancelSearch}
-                  resultSong={songs.find((s) => s.id === searchResultSongId)}
-                  inputRef={searchInputRef}
-                  artistInputRef={artistInputRef}
-                  onQueryChange={setSearchQuery}
-                  onArtistChange={setSearchArtist}
-                  onAddSong={handleAddSongFromSearch}
-                  onCancelSearch={handleCancelSearch}
-                />
-              ) : activeSong && (
-                <>
-                  {/* Song header */}
-                  <div
-                    className="px-4 sm:px-5 py-3 flex flex-col sm:flex-row sm:items-center gap-2 justify-between relative z-10"
-                    style={{ borderBottom: "1px solid #F2F7F0" }}
-                  >
-                    <div className="flex items-center gap-2.5">
-                      {headerStep === 1 && mode === "lyrics" && isEditingTitle ? (
-                        <div className="flex items-center gap-2 min-w-0">
-                          <input
-                            ref={titleInputRef}
-                            value={titleDraft}
-                            onChange={(e) => setTitleDraft(e.target.value)}
-                            onBlur={saveTitleEdit}
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter") {
-                                e.preventDefault();
-                                saveTitleEdit();
-                              }
-                              if (e.key === "Escape") {
-                                e.preventDefault();
-                                cancelTitleEdit();
-                              }
-                            }}
-                            className="text-sm font-bold rounded-lg px-2 py-1 min-w-0 w-full sm:w-72"
-                            style={{
-                              color: "#1a3824",
-                              background: "#F2F7F0",
-                              border: "1px solid #D8EBD0",
-                              outline: "none",
-                            }}
-                          />
+                    <div
+                      className={`${activeSong ? "flex" : "hidden xl:flex"} rounded-[28px] overflow-hidden flex-col`}
+                      style={{ background: "#F8F8F5", border: "1px solid #D6DAD3", boxShadow: "0 18px 48px rgba(20,26,22,0.08)" }}
+                    >
+                      <div className="hidden xl:block px-5 sm:px-6 py-5 border-b" style={{ borderColor: "#DFE3DD" }}>
+                        <div className="flex items-end justify-between gap-3 mb-4">
+                          <div>
+                            <p className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.16em]" style={{ color: "#7D867F" }}>
+                              곡 검색
+                            </p>
+                            <p className="text-[13px] sm:text-sm mt-1" style={{ color: "#616A62" }}>
+                              아티스트를 함께 입력하면 더 정확하게 찾을 수 있어요.
+                            </p>
+                          </div>
+                          <p className="text-[11px] sm:text-xs font-medium shrink-0" style={{ color: "#7B857C" }}>
+                            최대 10곡
+                          </p>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_220px_auto] gap-3">
+                          <label className="flex items-center gap-3 rounded-[20px] px-4 py-3.5" style={{ background: "#FFFFFF", border: "1px solid #CDD3CC" }}>
+                            <Search size={16} style={{ color: "#6B746C" }} />
+                            <input
+                              ref={desktopSearchInputRef}
+                              type="text"
+                              value={searchQuery}
+                              onChange={(e) => setSearchQuery(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === "Tab" && !e.shiftKey) {
+                                  e.preventDefault();
+                                  requestAnimationFrame(() => desktopArtistInputRef.current?.focus());
+                                  return;
+                                }
+                                if (e.key === "Enter") e.preventDefault();
+                              }}
+                              onKeyUp={(e) => {
+                                if (e.key === "Enter") handleAddSongFromSearch();
+                              }}
+                              placeholder="곡명 (예: 베드로의 고백)"
+                              disabled={songs.length >= 10}
+                              className="w-full bg-transparent text-[13px] sm:text-sm focus:outline-none"
+                              style={{ color: "#151A16" }}
+                            />
+                          </label>
+                          <label className="flex items-center rounded-[20px] px-4 py-3.5" style={{ background: "#FFFFFF", border: "1px solid #CDD3CC" }}>
+                            <input
+                              ref={desktopArtistInputRef}
+                              type="text"
+                              value={searchArtist}
+                              onChange={(e) => setSearchArtist(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") e.preventDefault();
+                              }}
+                              onKeyUp={(e) => {
+                                if (e.key === "Enter") handleAddSongFromSearch();
+                              }}
+                              placeholder="아티스트 (선택)"
+                              disabled={songs.length >= 10}
+                              className="w-full bg-transparent text-[13px] sm:text-sm focus:outline-none"
+                              style={{ color: "#151A16" }}
+                            />
+                          </label>
                           <button
-                            onClick={saveTitleEdit}
-                            onMouseDown={(e) => e.preventDefault()}
-                            className="w-8 h-8 rounded-lg grid place-items-center transition-colors"
-                            style={{ color: "#2E5E3E", background: "rgba(46,94,62,0.08)" }}
-                            aria-label="제목 저장"
+                            onClick={handleAddSongFromSearch}
+                            disabled={!searchQuery.trim() || songs.length >= 10 || searchInFlight}
+                            className="inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-[20px] text-[13px] sm:text-sm font-semibold text-white disabled:opacity-40"
+                            style={{ background: "#223B2A", boxShadow: "0 12px 30px rgba(34,59,42,0.18)" }}
                           >
-                            <Check size={14} />
-                          </button>
-                          <button
-                            onClick={cancelTitleEdit}
-                            onMouseDown={(e) => e.preventDefault()}
-                            className="w-8 h-8 rounded-lg grid place-items-center transition-colors"
-                            style={{ color: "#86C59A", background: "rgba(214,240,219,0.4)" }}
-                            aria-label="제목 취소"
-                          >
-                            <XCircle size={14} />
+                            <Plus size={16} />
+                            곡 추가
                           </button>
                         </div>
-                      ) : (
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-1.5 min-w-0">
-                            <span className="text-sm font-bold truncate" style={{ color: "#1a3824" }}>
-                              {activeSong.title}
-                            </span>
-                            {headerStep === 1 && mode === "lyrics" && (
-                              <button
-                                onClick={startTitleEdit}
-                                className="w-7 h-7 rounded-lg grid place-items-center transition-colors"
-                                style={{ color: "#2E5E3E", background: "rgba(46,94,62,0.08)" }}
-                                aria-label="제목 수정"
-                              >
-                                <Pencil size={13} />
-                              </button>
+                      </div>
+
+                      {activeSong ? (
+                        <div className="px-5 sm:px-6 py-5 flex flex-col gap-4">
+                          <div className="min-w-0">
+                            {headerStep === 1 && isEditingTitle ? (
+                              <div className="flex items-center gap-2 min-w-0">
+                                <input
+                                  ref={titleInputRef}
+                                  value={titleDraft}
+                                  onChange={(e) => setTitleDraft(e.target.value)}
+                                  onBlur={saveTitleEdit}
+                                  onKeyDown={(e) => {
+                                    if (e.key === "Enter") {
+                                      e.preventDefault();
+                                      saveTitleEdit();
+                                    }
+                                    if (e.key === "Escape") {
+                                      e.preventDefault();
+                                      cancelTitleEdit();
+                                    }
+                                  }}
+                                  className="text-sm font-bold rounded-lg px-2 py-1 min-w-0 w-full sm:w-72"
+                                  style={{ color: "#1a3824", background: "#F2F7F0", border: "1px solid #D8EBD0", outline: "none" }}
+                                />
+                                <button onClick={saveTitleEdit} onMouseDown={(e) => e.preventDefault()} className="w-8 h-8 rounded-lg grid place-items-center transition-colors" style={{ color: "#2E5E3E", background: "rgba(46,94,62,0.08)" }} aria-label="제목 저장">
+                                  <Check size={14} />
+                                </button>
+                                <button onClick={cancelTitleEdit} onMouseDown={(e) => e.preventDefault()} className="w-8 h-8 rounded-lg grid place-items-center transition-colors" style={{ color: "#86C59A", background: "rgba(214,240,219,0.4)" }} aria-label="제목 취소">
+                                  <XCircle size={14} />
+                                </button>
+                              </div>
+                            ) : (
+                              <div className="min-w-0">
+                                <p className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.16em]" style={{ color: "#7D867F" }}>
+                                  가사 편집
+                                </p>
+                                <div className="flex items-center gap-2 mt-1 min-w-0">
+                                  <span className="text-[20px] sm:text-[22px] font-semibold tracking-[-0.02em] truncate" style={{ color: "#151A16" }}>
+                                    {activeSong.title}
+                                  </span>
+                                  {headerStep === 1 && !activeSong.loading && (
+                                    <button onClick={startTitleEdit} className="w-9 h-9 rounded-xl grid place-items-center transition-colors" style={{ background: "#EBEEEA", color: "#223B2A" }} aria-label="제목 수정">
+                                      <PencilLine size={15} />
+                                    </button>
+                                  )}
+                                </div>
+                                {activeSong.source && activeSong.source !== "manual" && showLyricsNotice && !activeSong.loading && (
+                                  <div className="mt-2 flex items-start gap-2 text-[13px] sm:text-sm leading-relaxed max-w-xl" style={{ color: "#616A62" }}>
+                                    <p>웹에서 불러온 가사예요. 한번 확인해 주세요.</p>
+                                    <button
+                                      onClick={() => {
+                                        setShowLyricsNotice(false);
+                                        setLyricsNoticeDismissed(true);
+                                      }}
+                                      className="w-5 h-5 rounded-md grid place-items-center flex-shrink-0 transition-colors"
+                                      style={{ color: "#86A88E", background: "rgba(242,247,240,0.95)" }}
+                                      aria-label="가사 안내 닫기"
+                                    >
+                                      <X size={12} />
+                                    </button>
+                                  </div>
+                                )}
+                              </div>
                             )}
                           </div>
-                          {activeSong.source && activeSong.source !== "manual" && showLyricsNotice && (
-                            <div className="mt-1.5 flex items-start gap-2 text-xs" style={{ color: "#6B7F72" }}>
-                              <p>웹에서 불러온 가사예요. 한번 확인해 주세요.</p>
-                              <button
-                                onClick={() => {
-                                  setShowLyricsNotice(false);
-                                  setLyricsNoticeDismissed(true);
+
+                          {activeSong.loading ? (
+                            <div className="rounded-[24px] overflow-hidden border h-[420px] flex items-center justify-center px-5 text-center" style={{ background: "#FFFFFF", borderColor: "#D6DAD3" }}>
+                              <div className="max-w-sm">
+                                <Loader2 size={24} className="animate-spin mx-auto mb-4" style={{ color: "#2E5E3E" }} />
+                                <p className="text-sm font-semibold" style={{ color: "#151A16" }}>가사를 검색하고 있습니다.</p>
+                                <p className="text-[13px] mt-2 leading-relaxed" style={{ color: "#616A62" }}>검색 중에는 같은 곡을 편집하지 않도록 잠시 잠급니다.</p>
+                                {showCancelSearch && (
+                                  <button
+                                    onClick={handleCancelSearch}
+                                    className="mt-5 inline-flex items-center justify-center px-4 py-2.5 rounded-xl text-[13px] font-semibold transition-all"
+                                    style={{ background: "#EEF2EC", border: "1px solid #D6DAD3", color: "#223B2A" }}
+                                  >
+                                    검색 취소하고 직접 입력하기
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="rounded-[24px] overflow-hidden border h-[420px] flex" style={{ background: "#FFFFFF", borderColor: "#D6DAD3" }}>
+                              <LyricsEditor
+                                songId={activeSong.id}
+                                text={editedLyrics[activeSong.id] ?? ""}
+                                step1Redesign
+                              onChange={(t) => handleLyricsChange(activeSong.id, t)}
+                              onActivate={() => setActiveLyricsEditorSongId(activeSong.id)}
+                              onUndo={() => {
+                                  const prev = lyricsHistory.undo();
+                                  if (prev) {
+                                    const text = prev[activeSong.id] ?? "";
+                                    const song = songs.find((s) => s.id === activeSong.id);
+                                    setSongLyrics(activeSong.id, text, song?.source ?? null);
+                                  }
                                 }}
-                                className="w-5 h-5 rounded-md grid place-items-center flex-shrink-0 transition-colors"
-                                style={{ color: "#86A88E", background: "rgba(242,247,240,0.95)" }}
-                                aria-label="가사 안내 닫기"
-                              >
-                                <X size={12} />
-                              </button>
+                              />
                             </div>
                           )}
                         </div>
-                      )}
-                      {activeSong.artist && (
-                        <span
-                          className="text-xs px-2.5 py-0.5 rounded-full font-medium w-fit"
-                          style={{ background: "rgba(46,94,62,0.08)", color: "#2E5E3E" }}
-                        >
-                          {activeSong.artist}
-                        </span>
+                      ) : (
+                        <div className="hidden xl:flex px-6 py-16 min-h-[360px] items-center justify-center text-center">
+                          <div>
+                            <p className="text-[18px] font-semibold tracking-[-0.01em]" style={{ color: "#151A16" }}>곡을 추가하면 가사를 편집할 수 있어요.</p>
+                            <p className="text-sm mt-2" style={{ color: "#616A62" }}>위 검색창에서 곡명을 입력해 주세요.</p>
+                          </div>
+                        </div>
                       )}
                     </div>
                   </div>
-
-                  {/* 가사 편집기 */}
-                  <LyricsEditor
-                    songId={activeSong.id}
-                    text={editedLyrics[activeSong.id] ?? ""}
-                    onChange={(t) => handleLyricsChange(activeSong.id, t)}
-                    onUndo={() => {
-                      const prev = lyricsHistory.undo();
-                      if (prev) {
-                        const text = prev[activeSong.id] ?? "";
-                        const song = songs.find((s) => s.id === activeSong.id);
-                        setSongLyrics(activeSong.id, text, song?.source ?? null);
-                      }
-                    }}
-                  />
-
-                  <div className="lg:hidden px-4 py-3 flex flex-wrap gap-2 border-t" style={{ borderColor: "#F2F7F0", background: "#FCFEFA" }}>
-                    {[
-                      { label: "원본 복원", onClick: restoreOriginalLyrics },
-                      { label: "중복 제거", onClick: () => applyLyricsChange(removeDuplicateLines) },
-                      { label: "줄 번호 정리", onClick: () => applyLyricsChange(renumberLines) },
-                      { label: "빈 줄 정리", onClick: () => applyLyricsChange(cleanBlankLines) },
-                      { label: "영어 삭제", onClick: () => applyLyricsChange(removeEnglishLines) },
-                      { label: "괄호 삭제", onClick: () => applyLyricsChange(removeParenthesesText) },
-                    ].map((action) => (
-                      <button
-                        key={action.label}
-                        onClick={action.onClick}
-                        className="px-3 py-2 rounded-xl text-xs font-semibold transition-all"
-                        style={{ background: "#F2F7F0", border: "1px solid #D8EBD0", color: "#2E5E3E" }}
+                </div>
+              ) : (
+                <>
+                  {!activeSong || showSearchPanel ? (
+                    <SongSearchPanel
+                      query={searchQuery}
+                      artist={searchArtist}
+                      songsCount={songs.length}
+                      searchLocked={searchInFlight}
+                      showCancelSearch={showCancelSearch}
+                      resultSong={songs.find((s) => s.id === searchResultSongId)}
+                      inputRef={searchInputRef}
+                      artistInputRef={artistInputRef}
+                      onQueryChange={setSearchQuery}
+                      onArtistChange={setSearchArtist}
+                      onAddSong={handleAddSongFromSearch}
+                      onCancelSearch={handleCancelSearch}
+                    />
+                  ) : activeSong ? (
+                    <>
+                      <div
+                        className="px-4 sm:px-5 py-3 flex flex-col sm:flex-row sm:items-center gap-2 justify-between relative z-10"
+                        style={{ borderBottom: "1px solid #F2F7F0" }}
                       >
-                        {action.label}
-                      </button>
-                    ))}
-                  </div>
+                        <div className="flex items-center gap-2.5">
+                          {headerStep === 1 && mode === "lyrics" && isEditingTitle ? (
+                            <div className="flex items-center gap-2 min-w-0">
+                              <input
+                                ref={titleInputRef}
+                                value={titleDraft}
+                                onChange={(e) => setTitleDraft(e.target.value)}
+                                onBlur={saveTitleEdit}
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter") {
+                                    e.preventDefault();
+                                    saveTitleEdit();
+                                  }
+                                  if (e.key === "Escape") {
+                                    e.preventDefault();
+                                    cancelTitleEdit();
+                                  }
+                                }}
+                                className="text-sm font-bold rounded-lg px-2 py-1 min-w-0 w-full sm:w-72"
+                                style={{ color: "#1a3824", background: "#F2F7F0", border: "1px solid #D8EBD0", outline: "none" }}
+                              />
+                              <button onClick={saveTitleEdit} onMouseDown={(e) => e.preventDefault()} className="w-8 h-8 rounded-lg grid place-items-center transition-colors" style={{ color: "#2E5E3E", background: "rgba(46,94,62,0.08)" }} aria-label="제목 저장">
+                                <Check size={14} />
+                              </button>
+                              <button onClick={cancelTitleEdit} onMouseDown={(e) => e.preventDefault()} className="w-8 h-8 rounded-lg grid place-items-center transition-colors" style={{ color: "#86C59A", background: "rgba(214,240,219,0.4)" }} aria-label="제목 취소">
+                                <XCircle size={14} />
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-1.5 min-w-0">
+                                <span className="text-sm font-bold truncate" style={{ color: "#1a3824" }}>
+                                  {activeSong.title}
+                                </span>
+                                {headerStep === 1 && mode === "lyrics" && (
+                                  <button onClick={startTitleEdit} className="w-7 h-7 rounded-lg grid place-items-center transition-colors" style={{ color: "#2E5E3E", background: "rgba(46,94,62,0.08)" }} aria-label="제목 수정">
+                                    <PencilLine size={13} />
+                                  </button>
+                                )}
+                              </div>
+                              {activeSong.source && activeSong.source !== "manual" && showLyricsNotice && (
+                                <div className="mt-1.5 flex items-start gap-2 text-xs" style={{ color: "#6B7F72" }}>
+                                  <p>웹에서 불러온 가사예요. 한번 확인해 주세요.</p>
+                                  <button
+                                    onClick={() => {
+                                      setShowLyricsNotice(false);
+                                      setLyricsNoticeDismissed(true);
+                                    }}
+                                    className="w-5 h-5 rounded-md grid place-items-center flex-shrink-0 transition-colors"
+                                    style={{ color: "#86A88E", background: "rgba(242,247,240,0.95)" }}
+                                    aria-label="가사 안내 닫기"
+                                  >
+                                    <X size={12} />
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                          {activeSong.artist && (
+                            <span className="text-xs px-2.5 py-0.5 rounded-full font-medium w-fit" style={{ background: "rgba(46,94,62,0.08)", color: "#2E5E3E" }}>
+                              {activeSong.artist}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      <LyricsEditor
+                        songId={activeSong.id}
+                        text={editedLyrics[activeSong.id] ?? ""}
+                        onChange={(t) => handleLyricsChange(activeSong.id, t)}
+                        onActivate={() => setActiveLyricsEditorSongId(activeSong.id)}
+                        onUndo={() => {
+                          const prev = lyricsHistory.undo();
+                          if (prev) {
+                            const text = prev[activeSong.id] ?? "";
+                            const song = songs.find((s) => s.id === activeSong.id);
+                            setSongLyrics(activeSong.id, text, song?.source ?? null);
+                          }
+                        }}
+                      />
+
+                      <div className="lg:hidden px-4 py-3 flex flex-wrap gap-2 border-t" style={{ borderColor: "#F2F7F0", background: "#FCFEFA" }}>
+                        {[
+                          { label: "원본 복원", onClick: restoreOriginalLyrics },
+                          { label: "중복 제거", onClick: () => applyLyricsChange(removeDuplicateLines) },
+                          { label: "줄 번호 정리", onClick: () => applyLyricsChange(renumberLines) },
+                          { label: "빈 줄 정리", onClick: () => applyLyricsChange(cleanBlankLines) },
+                          { label: "영어 삭제", onClick: () => applyLyricsChange(removeEnglishLines) },
+                          { label: "괄호 삭제", onClick: () => applyLyricsChange(removeParenthesesText) },
+                        ].map((action) => (
+                          <button key={action.label} onClick={action.onClick} className="px-3 py-2 rounded-xl text-xs font-semibold transition-all" style={{ background: "#F2F7F0", border: "1px solid #D8EBD0", color: "#2E5E3E" }}>
+                            {action.label}
+                          </button>
+                        ))}
+                      </div>
+                    </>
+                  ) : null}
                 </>
               )}
-            </div>
+            </section>
 
             {/* 우측 패널 */}
-            {!showSearchPanel && activeSong && (
+            {(step1Redesign || (!step1Redesign && !showSearchPanel && activeSong)) && (
               <>
-                <div className="hidden lg:flex">
-                  <Divider onMouseDown={rightPanel.onMouseDown} />
-                </div>
+                {!step1Redesign && (
+                  <div className="hidden lg:flex">
+                    <Divider onMouseDown={rightPanel.onMouseDown} />
+                  </div>
+                )}
                 <RightPanel
                   song={activeSong}
-                  width={rightPanel.size}
+                  width={step1Redesign ? 320 : rightPanel.size}
+                  step1Redesign={step1Redesign}
+                  onPrimaryAction={handleRunAI}
+                  primaryActionLabel="슬라이드 편집"
+                  primaryActionIcon={aiLoading ? <Loader2 size={16} className="animate-spin" /> : <Wand2 size={16} />}
+                  primaryActionDisabled={!canProceedToSlides}
+                  lyricsActionsDisabled={step1Redesign ? !canUseLyricsActions : false}
                   onRestoreOriginal={restoreOriginalLyrics}
                   onRemoveDuplicates={() => applyLyricsChange(removeDuplicateLines)}
                   onRenumberLines={() => applyLyricsChange(renumberLines)}
@@ -1763,34 +2189,47 @@ function EditorFlowInner({
               setActiveSongIndex={selectSong}
               slidesPerSong={slidesPerSong}
               showCount={true}
-              width={sidebarSlides.size}
+              width={step2Redesign ? 280 : sidebarSlides.size}
+              step1Redesign={step2Redesign}
               onRemoveSong={handleRemoveSong}
               onReorderSongs={handleReorderSongs}
             />
-            <div className="hidden lg:block">
-              <Divider onMouseDown={sidebarSlides.onMouseDown} />
-            </div>
+            {!step2Redesign && (
+              <div className="hidden lg:block">
+                <Divider onMouseDown={sidebarSlides.onMouseDown} />
+              </div>
+            )}
 
             {activeSong && (
               <>
                 {/* 가운데: 텍스트 에디터 */}
-                <div className="flex-1 flex flex-col min-w-0" style={{ borderRight: "1px solid #D8EBD0", background: "white" }}>
+                <div
+                  className={step2Redesign ? "flex-1 min-w-0 flex flex-col m-4 sm:m-6 xl:my-3 xl:ml-6 xl:mr-4 rounded-[28px] overflow-hidden" : "flex-1 flex flex-col min-w-0"}
+                  style={step2Redesign ? { background: "#F8F8F5", border: "1px solid #D6DAD3", boxShadow: "0 18px 48px rgba(20,26,22,0.08)" } : { borderRight: "1px solid #D8EBD0", background: "white" }}
+                >
                   <div
-                    className="px-4 sm:px-5 py-3 flex flex-col sm:flex-row sm:items-center gap-2 justify-between"
-                    style={{ borderBottom: "1px solid #F2F7F0" }}
+                    className={step2Redesign ? "px-5 sm:px-6 py-5 flex flex-col sm:flex-row sm:items-start gap-4 justify-between" : "px-4 sm:px-5 py-3 flex flex-col sm:flex-row sm:items-center gap-2 justify-between"}
+                    style={{ borderBottom: step2Redesign ? "1px solid #DFE3DD" : "1px solid #F2F7F0" }}
                   >
                     <div className="min-w-0 flex-1">
-                      <span className="text-sm font-bold truncate block sm:inline" style={{ color: "#1a3824" }}>
-                        {activeSong.title}
-                      </span>
-                      <span className="text-xs ml-2" style={{ color: "#86C59A" }}>
-                        <code style={{ color: "#2E5E3E", fontWeight: 600 }}>//</code>
-                        {" "}로 슬라이드 구분
-                      </span>
+                      {step2Redesign && (
+                        <p className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.16em] mb-1" style={{ color: "#7D867F" }}>
+                          슬라이드 편집
+                        </p>
+                      )}
+                      <div className={step2Redesign ? "flex flex-wrap items-center gap-2" : ""}>
+                        <span className={step2Redesign ? "text-[20px] sm:text-[22px] font-semibold tracking-[-0.02em] truncate" : "text-sm font-bold truncate block sm:inline"} style={{ color: step2Redesign ? "#151A16" : "#1a3824" }}>
+                          {activeSong.title}
+                        </span>
+                        <span className={step2Redesign ? "text-xs px-2.5 py-1 rounded-full font-medium" : "text-xs ml-2"} style={step2Redesign ? { color: "#4F5C52", background: "#EBEEEA" } : { color: "#86C59A" }}>
+                          <code style={{ color: step2Redesign ? "#223B2A" : "#2E5E3E", fontWeight: 700 }}>//</code>
+                          {" "}로 슬라이드 구분
+                        </span>
+                      </div>
                       {activeSong.slideSplitFailed && (
                         <span
                           className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-xl mt-2 sm:mt-0 sm:ml-3"
-                          style={{ background: "#FEF3C7", color: "#92400E", border: "1px solid #FDE68A" }}
+                          style={step2Redesign ? { background: "#FFF7E6", color: "#8A4B10", border: "1px solid #F3D7A1" } : { background: "#FEF3C7", color: "#92400E", border: "1px solid #FDE68A" }}
                         >
                           <AlertTriangle size={12} />
                           AI 구분 실패, 수동 편집 필요
@@ -1800,8 +2239,8 @@ function EditorFlowInner({
                     <button
                       onClick={() => handleRerunAI(activeSong.id, editedLyrics[activeSong.id] ?? "")}
                       disabled={aiLoading}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold shrink-0 ml-3 transition-all disabled:opacity-40"
-                      style={{ background: "#F2F7F0", border: "1px solid #D8EBD0", color: "#2E5E3E" }}
+                      className={step2Redesign ? "inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl text-[13px] font-semibold shrink-0 transition-all disabled:opacity-40" : "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold shrink-0 ml-3 transition-all disabled:opacity-40"}
+                      style={step2Redesign ? { background: "#FFFFFF", border: "1px solid #CDD3CC", color: "#223B2A" } : { background: "#F2F7F0", border: "1px solid #D8EBD0", color: "#2E5E3E" }}
                     >
                       {aiLoading
                         ? <Loader2 size={12} className="animate-spin" />
@@ -1812,16 +2251,16 @@ function EditorFlowInner({
                   </div>
 
                   {aiLoading ? (
-                    <div className="flex-1 flex items-center justify-center" style={{ background: "#F2F7F0" }}>
-                      <div className="text-center">
+                    <div className={step2Redesign ? "flex-1 min-h-[420px] flex items-center justify-center px-8 sm:px-12 py-16 sm:py-20" : "flex-1 flex items-center justify-center"} style={{ background: step2Redesign ? "#FFFFFF" : "#F2F7F0" }}>
+                      <div className={step2Redesign ? "text-center max-w-[280px] sm:max-w-sm mx-auto" : "text-center"}>
                         <div
                           className="w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-3"
-                          style={{ background: "rgba(46,94,62,0.1)" }}
+                          style={{ background: step2Redesign ? "#EEF2EC" : "rgba(46,94,62,0.1)" }}
                         >
-                          <Loader2 size={20} className="animate-spin" style={{ color: "#2E5E3E" }} />
+                          <Loader2 size={20} className="animate-spin" style={{ color: step2Redesign ? "#223B2A" : "#2E5E3E" }} />
                         </div>
-                        <p className="text-sm font-medium" style={{ color: "#1a3824" }}>AI가 슬라이드를 구분하고 있습니다...</p>
-                        <p className="text-xs mt-1" style={{ color: "#86C59A" }}>잠시만 기다려주세요</p>
+                        <p className="text-sm font-medium" style={{ color: step2Redesign ? "#151A16" : "#1a3824" }}>AI가 슬라이드를 구분하고 있습니다...</p>
+                        <p className="text-xs mt-1" style={{ color: step2Redesign ? "#616A62" : "#86C59A" }}>잠시만 기다려주세요</p>
                       </div>
                     </div>
                   ) : (
@@ -1845,83 +2284,133 @@ function EditorFlowInner({
                           }
                         }
                       }}
-                    className="flex-1 px-4 sm:px-5 py-4 text-sm resize-none focus:outline-none font-mono leading-relaxed"
-                    style={{ background: "#F2F7F0", color: "#1a3824" }}
+                    className={step2Redesign ? "flex-1 min-h-[420px] px-5 sm:px-6 py-5 text-[15px] resize-none focus:outline-none font-mono leading-relaxed" : "flex-1 px-4 sm:px-5 py-4 text-sm resize-none focus:outline-none font-mono leading-relaxed"}
+                    style={{ background: step2Redesign ? "#FFFFFF" : "#F2F7F0", color: step2Redesign ? "#151A16" : "#1a3824" }}
                     spellCheck={false}
                   />
                   )}
 
-                  <div className="lg:hidden border-t px-4 py-3" style={{ borderColor: "#D8EBD0", background: "white" }}>
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-semibold uppercase tracking-widest" style={{ color: "#86C59A" }}>
-                          슬라이드 목록
-                        </span>
-                        <span
-                          className="text-xs font-bold px-1.5 py-0.5 rounded-full"
-                          style={{ background: "rgba(46,94,62,0.1)", color: "#2E5E3E" }}
-                        >
-                          {(slidesPerSong[activeSong.id] ?? []).length}
-                        </span>
+                  <div className={step2Redesign ? `xl:hidden border-t px-5 ${showMobileSlideList ? "py-4" : "py-3"}` : "lg:hidden border-t px-4 py-3"} style={{ borderColor: step2Redesign ? "#DFE3DD" : "#D8EBD0", background: step2Redesign ? "#F8F8F5" : "white" }}>
+                    <div className={`flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between ${showMobileSlideList ? "mb-3" : "mb-0"}`}>
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className={step2Redesign ? "text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.16em]" : "text-xs font-semibold uppercase tracking-widest"} style={{ color: step2Redesign ? "#7D867F" : "#86C59A" }}>
+                            슬라이드 목록
+                          </span>
+                          <span
+                            className="text-xs font-bold px-1.5 py-0.5 rounded-full"
+                            style={{ background: step2Redesign ? "#EBEEEA" : "rgba(46,94,62,0.1)", color: step2Redesign ? "#223B2A" : "#2E5E3E" }}
+                          >
+                            {(slidesPerSong[activeSong.id] ?? []).length}
+                          </span>
+                        </div>
+                        {step2Redesign && !showMobileSlideList && (
+                          <p className="text-xs mt-1.5" style={{ color: "#616A62" }}>
+                            목록을 접어두었습니다.
+                          </p>
+                        )}
                       </div>
-                      <button
-                        onClick={() => handleAddSlide(activeSong.id)}
-                        className="px-3 py-1.5 rounded-xl text-xs font-semibold"
-                        style={{ border: "1px solid #D8EBD0", color: "#2E5E3E", background: "#F2F7F0" }}
-                      >
-                        슬라이드 추가
-                      </button>
+                      <div className="flex items-center gap-2 shrink-0">
+                        {step2Redesign && (
+                          <button
+                            onClick={() => setShowMobileSlideList((prev) => !prev)}
+                            className="px-3 py-1.5 rounded-xl text-xs font-semibold inline-flex items-center gap-1"
+                            style={{ border: "1px solid #CDD3CC", color: "#223B2A", background: "#FFFFFF" }}
+                          >
+                            {showMobileSlideList ? "목록 접기" : "목록 보기"}
+                            {showMobileSlideList ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+                          </button>
+                        )}
+                        <button
+                          onClick={() => handleAddSlide(activeSong.id)}
+                          className="px-3 py-1.5 rounded-xl text-xs font-semibold"
+                          style={{ border: step2Redesign ? "1px solid #CDD3CC" : "1px solid #D8EBD0", color: step2Redesign ? "#223B2A" : "#2E5E3E", background: step2Redesign ? "#FFFFFF" : "#F2F7F0" }}
+                        >
+                          슬라이드 추가
+                        </button>
+                      </div>
                     </div>
-                    <div className="flex flex-col gap-3 max-h-64 overflow-y-auto pr-1">
-                      {(slidesPerSong[activeSong.id] ?? []).map((slide, i) => (
-                        <SlideCard
-                          key={`${activeSong.id}-mobile-slide-${i}`}
-                          id={`${activeSong.id}-mobile-slide-${i}`}
-                          order={slide.order}
-                          lyrics={slide.lyrics}
-                          isActive={false}
-                          onClick={() => {}}
-                          onRemove={() => handleRemoveSlide(activeSong.id, i)}
-                          onInsertBefore={() => handleInsertSlide(activeSong.id, i)}
-                          onInsertAfter={() => handleInsertSlide(activeSong.id, i + 1)}
-                        />
-                      ))}
-                    </div>
+                    {(!step2Redesign || showMobileSlideList) && (
+                      <div className={step2Redesign ? "flex flex-col gap-3 overflow-visible pr-1" : "flex flex-col gap-3 max-h-64 overflow-y-auto pr-1"}>
+                        <DndContext
+                          sensors={sensors}
+                          collisionDetection={closestCenter}
+                          onDragEnd={(e) => handleDragEnd(activeSong.id, e)}
+                        >
+                          <SortableContext
+                            items={getSlideIdsForSong(activeSong.id)}
+                            strategy={verticalListSortingStrategy}
+                          >
+                            <div className="flex flex-col gap-3">
+                              {(slidesPerSong[activeSong.id] ?? []).map((slide, i) => {
+                                const ids = getSlideIdsForSong(activeSong.id);
+                                return (
+                                  <SlideCard
+                                    key={ids[i] || `${activeSong.id}-mobile-slide-${i}`}
+                                    id={ids[i] || `${activeSong.id}-mobile-slide-${i}`}
+                                    order={slide.order}
+                                    lyrics={slide.lyrics}
+                                    isActive={false}
+                                    onClick={() => {}}
+                                    onRemove={() => handleRemoveSlide(activeSong.id, i)}
+                                    onInsertBefore={() => handleInsertSlide(activeSong.id, i)}
+                                    onInsertAfter={() => handleInsertSlide(activeSong.id, i + 1)}
+                                    variant={step2Redesign ? "redesign" : "default"}
+                                  />
+                                );
+                              })}
+                              {(slidesPerSong[activeSong.id] ?? []).length === 0 && (
+                                <div className="rounded-2xl px-4 py-8 text-center text-sm" style={{ background: "#FFFFFF", border: "1px dashed #C8D0C7", color: "#5B645D" }}>
+                                  아직 슬라이드가 없어요.
+                                </div>
+                              )}
+                            </div>
+                          </SortableContext>
+                        </DndContext>
+                      </div>
+                    )}
                   </div>
                 </div>
 
                 {/* 오른쪽: 슬라이드 목록 */}
-                <div className="hidden lg:flex">
-                  <Divider onMouseDown={rightPanel.onMouseDown} />
-                </div>
+                {!step2Redesign && (
+                  <div className="hidden lg:flex">
+                    <Divider onMouseDown={rightPanel.onMouseDown} />
+                  </div>
+                )}
                 <div
-                  className="hidden lg:flex flex-shrink-0 flex-col"
-                  style={{ width: rightPanel.size, background: "white" }}
+                  className={step2Redesign ? "hidden xl:flex flex-shrink-0 flex-col my-3 ml-8 mr-14 rounded-[28px] overflow-hidden" : "hidden lg:flex flex-shrink-0 flex-col"}
+                  style={step2Redesign ? { width: 312, background: "#F8F8F5", border: "1px solid #D6DAD3", boxShadow: "0 18px 42px rgba(20,26,22,0.06)" } : { width: rightPanel.size, background: "white" }}
                 >
-                  <div className="px-4 py-3" style={{ borderBottom: "1px solid #F2F7F0" }}>
-                    <span className="text-xs font-semibold uppercase tracking-widest" style={{ color: "#86C59A" }}>
+                  <div className={step2Redesign ? "px-5 py-5" : "px-4 py-3"} style={{ borderBottom: step2Redesign ? "1px solid #DFE3DD" : "1px solid #F2F7F0" }}>
+                    <span className={step2Redesign ? "text-xs font-semibold uppercase tracking-widest" : "text-xs font-semibold uppercase tracking-widest"} style={{ color: step2Redesign ? "#7D867F" : "#86C59A" }}>
                       슬라이드 목록
                     </span>
+                    {step2Redesign && (
+                      <h3 className="text-[20px] font-semibold mt-2 tracking-[-0.02em]" style={{ color: "#151A16" }}>
+                        {(slidesPerSong[activeSong.id] ?? []).length}개 슬라이드
+                      </h3>
+                    )}
                     <span
-                      className="ml-2 text-xs font-bold px-1.5 py-0.5 rounded-full"
+                      className={step2Redesign ? "hidden" : "ml-2 text-xs font-bold px-1.5 py-0.5 rounded-full"}
                       style={{ background: "rgba(46,94,62,0.1)", color: "#2E5E3E" }}
                     >
                       {(slidesPerSong[activeSong.id] ?? []).length}
                     </span>
                   </div>
-                  <div className="flex-1 overflow-y-auto p-3">
+                  <div className={step2Redesign ? "flex-1 overflow-y-auto p-4" : "flex-1 overflow-y-auto p-3"}>
                     <DndContext
                       sensors={sensors}
                       collisionDetection={closestCenter}
                       onDragEnd={(e) => handleDragEnd(activeSong.id, e)}
                     >
                       <SortableContext
-                        items={slideIds[activeSong.id] ?? []}
+                        items={getSlideIdsForSong(activeSong.id)}
                         strategy={verticalListSortingStrategy}
                       >
                         <div className="flex flex-col gap-3">
                           {(slidesPerSong[activeSong.id] ?? []).map((slide, i) => {
-                            const ids = slideIds[activeSong.id] ?? [];
+                            const ids = getSlideIdsForSong(activeSong.id);
                             return (
                               <SlideCard
                                 key={ids[i] || `${activeSong.id}-slide-${i}`}
@@ -1933,23 +2422,29 @@ function EditorFlowInner({
                                 onRemove={() => handleRemoveSlide(activeSong.id, i)}
                                 onInsertBefore={() => handleInsertSlide(activeSong.id, i)}
                                 onInsertAfter={() => handleInsertSlide(activeSong.id, i + 1)}
+                                variant={step2Redesign ? "redesign" : "default"}
                               />
                             );
                           })}
+                          {(slidesPerSong[activeSong.id] ?? []).length === 0 && (
+                            <div className="rounded-2xl px-4 py-8 text-center text-sm" style={{ background: "#FFFFFF", border: "1px dashed #C8D0C7", color: "#5B645D" }}>
+                              아직 슬라이드가 없어요.
+                            </div>
+                          )}
                         </div>
                       </SortableContext>
                     </DndContext>
                     <button
                       onClick={() => handleAddSlide(activeSong.id)}
-                      className="mt-3 w-full py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-1.5 transition-all"
-                      style={{ border: "1.5px dashed #D8EBD0", color: "#86C59A" }}
+                      className={step2Redesign ? "mt-4 w-full py-3 rounded-2xl text-sm font-semibold flex items-center justify-center gap-1.5 transition-all" : "mt-3 w-full py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-1.5 transition-all"}
+                      style={step2Redesign ? { border: "1px dashed #C8D0C7", color: "#253029", background: "#FFFFFF" } : { border: "1.5px dashed #D8EBD0", color: "#86C59A" }}
                       onMouseEnter={(e) => {
-                        e.currentTarget.style.borderColor = "#2E5E3E";
-                        e.currentTarget.style.color = "#2E5E3E";
+                        e.currentTarget.style.borderColor = step2Redesign ? "#9FA99E" : "#2E5E3E";
+                        e.currentTarget.style.color = step2Redesign ? "#151A16" : "#2E5E3E";
                       }}
                       onMouseLeave={(e) => {
-                        e.currentTarget.style.borderColor = "#D8EBD0";
-                        e.currentTarget.style.color = "#86C59A";
+                        e.currentTarget.style.borderColor = step2Redesign ? "#C8D0C7" : "#D8EBD0";
+                        e.currentTarget.style.color = step2Redesign ? "#253029" : "#86C59A";
                       }}
                     >
                       <Plus size={12} />
@@ -1963,45 +2458,240 @@ function EditorFlowInner({
         )}
       </main>
 
-      {/* 하단 버튼 */}
-      <div
-        className="px-4 sm:px-6 py-4 flex flex-row items-center justify-between gap-3 sm:gap-4"
-        style={{ borderTop: "1px solid #D8EBD0", background: "white" }}
-      >
-        <button
-          onClick={() => router.push(backHref)}
-          className="inline-flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl text-sm font-semibold transition-all flex-1 sm:flex-none min-w-0"
-          style={{ background: "#F2F7F0", border: "1px solid #D8EBD0", color: "#2E5E3E" }}
-        >
-          <ArrowLeft size={15} />
-          이전
-        </button>
+      {step1Redesign ? (
+        <>
+          {mode === "lyrics" && (
+            <>
+              <div className="fixed inset-x-0 bottom-4 px-4 pointer-events-none z-40 sm:hidden">
+                <div className="max-w-7xl mx-auto flex flex-col gap-3 pointer-events-auto">
+                  <div className="flex justify-end">
+                    <button
+                      onClick={() => setShowMobileTools((prev) => !prev)}
+                      disabled={!activeSong}
+                      className="inline-flex items-center gap-2 px-3 py-2 rounded-2xl text-[11px] font-semibold"
+                      style={{ background: "rgba(248,248,245,0.96)", border: "1px solid rgba(214,218,211,0.98)", color: "#253029", boxShadow: "0 16px 32px rgba(20,26,22,0.1)", backdropFilter: "blur(16px)", opacity: activeSong ? 1 : 0.45 }}
+                    >
+                      <Wand2 size={13} />
+                      {activeSong && showMobileTools ? "도구 접기" : "가사 관리"}
+                    </button>
+                  </div>
+                  {showMobileTools && activeSong && (
+                    <div className="rounded-[24px] px-4 py-3" style={{ background: "rgba(248,248,245,0.94)", border: "1px solid rgba(214,218,211,0.98)", boxShadow: "0 20px 36px rgba(20,26,22,0.1)", backdropFilter: "blur(16px)" }}>
+                      <div className="flex gap-2 overflow-x-auto">
+                        {[
+                          { label: "원본 복원", onClick: restoreOriginalLyrics },
+                          { label: "중복 제거", onClick: () => applyLyricsChange(removeDuplicateLines) },
+                          { label: "줄 번호 정리", onClick: () => applyLyricsChange(renumberLines) },
+                          { label: "빈 줄 정리", onClick: () => applyLyricsChange(cleanBlankLines) },
+                          { label: "영어 삭제", onClick: () => applyLyricsChange(removeEnglishLines) },
+                          { label: "괄호 삭제", onClick: () => applyLyricsChange(removeParenthesesText) },
+                        ].map((action) => (
+                          <button
+                            key={action.label}
+                            onClick={action.onClick}
+                            className="px-3 py-2 rounded-xl text-[11px] font-semibold shrink-0"
+                            style={{ background: "#FFFFFF", border: "1px solid #CDD3CC", color: "#253029" }}
+                          >
+                            {action.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  <div className="px-3.5 py-3 flex items-center justify-between gap-2.5 rounded-[24px]" style={{ background: "rgba(246,247,244,0.92)", border: "1px solid rgba(211,216,208,0.95)", boxShadow: "0 20px 40px rgba(20,26,22,0.12)", backdropFilter: "blur(16px)" }}>
+                    <button
+                      onClick={() => router.push(backHref)}
+                      className="inline-flex min-w-0 items-center justify-center gap-1.5 px-3 py-3 rounded-2xl text-[12px] font-semibold flex-1"
+                      style={{ background: "#FFFFFF", color: "#1F2A22", border: "1px solid #D3D8D0" }}
+                    >
+                      <ArrowLeft size={15} />
+                      이전
+                    </button>
+                    <button
+                      onClick={handleRunAI}
+                      disabled={!canProceedToSlides}
+                      className="inline-flex min-w-0 items-center justify-center gap-1.5 px-3 py-3 rounded-2xl text-[12px] font-semibold text-white flex-1 disabled:opacity-40"
+                      style={{ background: "#223B2A", boxShadow: "0 12px 30px rgba(34,59,42,0.16)" }}
+                    >
+                      {aiLoading ? <Loader2 size={15} className="animate-spin" /> : <Wand2 size={15} />}
+                      슬라이드 편집
+                    </button>
+                  </div>
+                </div>
+              </div>
 
-        {mode === "lyrics" && availableModes.includes("lyrics") ? (
+              <div className="hidden sm:block xl:hidden fixed inset-x-0 bottom-4 px-6 pointer-events-none z-40">
+                <div className="max-w-7xl mx-auto flex flex-col gap-3 pointer-events-auto">
+                  <div className="flex justify-end">
+                    <button
+                      onClick={() => setShowMobileTools((prev) => !prev)}
+                      disabled={!activeSong}
+                      className="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-2xl text-xs font-semibold"
+                      style={{ background: "rgba(248,248,245,0.96)", border: "1px solid rgba(214,218,211,0.98)", color: "#253029", boxShadow: "0 16px 32px rgba(20,26,22,0.1)", backdropFilter: "blur(16px)", opacity: activeSong ? 1 : 0.45 }}
+                    >
+                      <Wand2 size={14} />
+                      {activeSong && showMobileTools ? "도구 접기" : "가사 관리"}
+                    </button>
+                  </div>
+                  {showMobileTools && activeSong && (
+                    <div className="rounded-[24px] px-5 py-3" style={{ background: "rgba(248,248,245,0.94)", border: "1px solid rgba(214,218,211,0.98)", boxShadow: "0 20px 36px rgba(20,26,22,0.1)", backdropFilter: "blur(16px)" }}>
+                      <div className="flex gap-2 overflow-x-auto">
+                        {[
+                          { label: "원본 복원", onClick: restoreOriginalLyrics },
+                          { label: "중복 제거", onClick: () => applyLyricsChange(removeDuplicateLines) },
+                          { label: "줄 번호 정리", onClick: () => applyLyricsChange(renumberLines) },
+                          { label: "빈 줄 정리", onClick: () => applyLyricsChange(cleanBlankLines) },
+                          { label: "영어 삭제", onClick: () => applyLyricsChange(removeEnglishLines) },
+                          { label: "괄호 삭제", onClick: () => applyLyricsChange(removeParenthesesText) },
+                        ].map((action) => (
+                          <button
+                            key={action.label}
+                            onClick={action.onClick}
+                            className="px-3 py-2 rounded-xl text-xs font-semibold shrink-0"
+                            style={{ background: "#FFFFFF", border: "1px solid #CDD3CC", color: "#253029" }}
+                          >
+                            {action.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  <div className="px-5 py-3.5 flex items-center justify-between gap-3 rounded-[24px]" style={{ background: "rgba(246,247,244,0.92)", border: "1px solid rgba(211,216,208,0.95)", boxShadow: "0 20px 40px rgba(20,26,22,0.12)", backdropFilter: "blur(16px)" }}>
+                    <button
+                      onClick={() => router.push(backHref)}
+                      className="inline-flex min-w-0 items-center justify-center gap-2 px-4 py-3 rounded-2xl text-sm font-semibold flex-1"
+                      style={{ background: "#FFFFFF", color: "#1F2A22", border: "1px solid #D3D8D0" }}
+                    >
+                      <ArrowLeft size={15} />
+                      이전
+                    </button>
+                    <button
+                      onClick={handleRunAI}
+                      disabled={!canProceedToSlides}
+                      className="inline-flex min-w-0 items-center justify-center gap-2 px-4 py-3 rounded-2xl text-sm font-semibold text-white flex-1 disabled:opacity-40"
+                      style={{ background: "#223B2A", boxShadow: "0 12px 30px rgba(34,59,42,0.16)" }}
+                    >
+                      {aiLoading ? <Loader2 size={15} className="animate-spin" /> : <Wand2 size={15} />}
+                      슬라이드 편집
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+
+          <div className="hidden xl:block fixed inset-x-0 bottom-6 px-6 pointer-events-none z-40">
+            <div className="max-w-7xl mx-auto rounded-[24px] px-6 py-4 pointer-events-auto" style={{ background: "rgba(246,247,244,0.92)", boxShadow: "0 20px 40px rgba(20,26,22,0.12)", backdropFilter: "blur(16px)" }}>
+              <div className="flex items-center justify-between">
+                <button
+                  onClick={() => router.push(backHref)}
+                  className="inline-flex items-center justify-center gap-2 px-4 py-3 rounded-2xl text-sm font-semibold"
+                  style={{ background: "#FFFFFF", color: "#1F2A22", border: "1px solid #D3D8D0" }}
+                >
+                  <ArrowLeft size={15} />
+                  이전
+                </button>
+                <button
+                  onClick={handleRunAI}
+                  disabled={!canProceedToSlides}
+                  className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl text-sm font-semibold text-white disabled:opacity-40"
+                  style={{ background: "#223B2A", boxShadow: "0 12px 30px rgba(34,59,42,0.16)" }}
+                >
+                  {aiLoading ? <Loader2 size={15} className="animate-spin" /> : <Wand2 size={15} />}
+                  슬라이드 편집
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
+      ) : step2Redesign ? (
+        <>
+          <div className="fixed inset-x-0 bottom-4 px-4 pointer-events-none z-40 xl:hidden">
+            <div className="max-w-7xl mx-auto px-3.5 py-3 flex items-center justify-between gap-2.5 rounded-[24px] pointer-events-auto" style={{ background: "rgba(246,247,244,0.92)", border: "1px solid rgba(211,216,208,0.95)", boxShadow: "0 20px 40px rgba(20,26,22,0.12)", backdropFilter: "blur(16px)" }}>
+              <button
+                onClick={() => router.push(backHref)}
+                className="inline-flex min-w-0 items-center justify-center gap-1.5 px-3 py-3 rounded-2xl text-[12px] sm:text-sm font-semibold flex-1"
+                style={{ background: "#FFFFFF", color: "#1F2A22", border: "1px solid #D3D8D0" }}
+              >
+                <ArrowLeft size={15} />
+                이전
+              </button>
+              <button
+                onClick={() => router.push(nextHref)}
+                disabled={totalSlides === 0}
+                className="inline-flex min-w-0 items-center justify-center gap-1.5 px-3 py-3 rounded-2xl text-[12px] sm:text-sm font-semibold text-white flex-1 disabled:opacity-40"
+                style={{ background: "#223B2A", boxShadow: totalSlides > 0 ? "0 12px 30px rgba(34,59,42,0.16)" : "none" }}
+              >
+                다음 단계
+                <ArrowRight size={15} />
+              </button>
+            </div>
+          </div>
+
+          <div className="hidden xl:block fixed inset-x-0 bottom-6 px-6 pointer-events-none z-40">
+            <div className="max-w-7xl mx-auto rounded-[24px] px-6 py-4 pointer-events-auto" style={{ background: "rgba(246,247,244,0.92)", boxShadow: "0 20px 40px rgba(20,26,22,0.12)", backdropFilter: "blur(16px)" }}>
+              <div className="flex items-center justify-between">
+                <button
+                  onClick={() => router.push(backHref)}
+                  className="inline-flex items-center justify-center gap-2 px-4 py-3 rounded-2xl text-sm font-semibold"
+                  style={{ background: "#FFFFFF", color: "#1F2A22", border: "1px solid #D3D8D0" }}
+                >
+                  <ArrowLeft size={15} />
+                  이전
+                </button>
+                <button
+                  onClick={() => router.push(nextHref)}
+                  disabled={totalSlides === 0}
+                  className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl text-sm font-semibold text-white disabled:opacity-40"
+                  style={{ background: "#223B2A", boxShadow: totalSlides > 0 ? "0 12px 30px rgba(34,59,42,0.16)" : "none" }}
+                >
+                  다음 단계
+                  <ArrowRight size={15} />
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
+      ) : (
+        <div
+          className="px-4 sm:px-6 py-4 flex flex-row items-center justify-between gap-3 sm:gap-4"
+          style={{ borderTop: "1px solid #D8EBD0", background: "white" }}
+        >
           <button
-            onClick={handleRunAI}
-            disabled={aiLoading}
-            className="inline-flex items-center justify-center gap-2 px-4 sm:px-7 py-2.5 rounded-xl text-sm font-semibold text-white transition-all disabled:opacity-40 flex-1 sm:flex-none min-w-0"
-            style={{ background: "#2E5E3E", boxShadow: "0 4px 16px rgba(46,94,62,0.2)" }}
+            onClick={() => router.push(backHref)}
+            className="inline-flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl text-sm font-semibold transition-all flex-1 sm:flex-none min-w-0"
+            style={{ background: "#F2F7F0", border: "1px solid #D8EBD0", color: "#2E5E3E" }}
           >
-            {aiLoading
-              ? <Loader2 size={15} className="animate-spin" />
-              : <Wand2 size={15} />
-            }
-            AI 슬라이드 구분
+            <ArrowLeft size={15} />
+            이전
           </button>
-        ) : (
-          <button
-            onClick={() => router.push(nextHref)}
-            disabled={totalSlides === 0}
-            className="inline-flex items-center justify-center gap-2 px-4 sm:px-7 py-2.5 rounded-xl text-sm font-semibold text-white transition-all disabled:opacity-40 flex-1 sm:flex-none min-w-0"
-            style={{ background: "#2E5E3E", boxShadow: totalSlides > 0 ? "0 4px 16px rgba(46,94,62,0.2)" : "none" }}
-          >
-            다음 단계
-            <ArrowRight size={15} />
-          </button>
-        )}
-      </div>
+
+          {mode === "lyrics" && availableModes.includes("lyrics") ? (
+            <button
+              onClick={handleRunAI}
+              disabled={aiLoading}
+              className="inline-flex items-center justify-center gap-2 px-4 sm:px-7 py-2.5 rounded-xl text-sm font-semibold text-white transition-all disabled:opacity-40 flex-1 sm:flex-none min-w-0"
+              style={{ background: "#2E5E3E", boxShadow: "0 4px 16px rgba(46,94,62,0.2)" }}
+            >
+              {aiLoading
+                ? <Loader2 size={15} className="animate-spin" />
+                : <Wand2 size={15} />
+              }
+              AI 슬라이드 구분
+            </button>
+          ) : (
+            <button
+              onClick={() => router.push(nextHref)}
+              disabled={totalSlides === 0}
+              className="inline-flex items-center justify-center gap-2 px-4 sm:px-7 py-2.5 rounded-xl text-sm font-semibold text-white transition-all disabled:opacity-40 flex-1 sm:flex-none min-w-0"
+              style={{ background: "#2E5E3E", boxShadow: totalSlides > 0 ? "0 4px 16px rgba(46,94,62,0.2)" : "none" }}
+            >
+              다음 단계
+              <ArrowRight size={15} />
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }

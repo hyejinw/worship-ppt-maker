@@ -23,6 +23,13 @@ import {
   RotateCcw,
 } from "lucide-react";
 
+const TEXT_Y_PRESETS = [25, 50, 75] as const;
+const PANEL_TEXT = "#151A16";
+const PANEL_MUTED = "#6B746C";
+const PANEL_SOFT = "#EEF2EC";
+const PANEL_BORDER = "#D6DAD3";
+const PANEL_ACCENT = "#223B2A";
+
 type Step3Snapshot = {
   slides: Slide[];
   settings: PPTSettings;
@@ -89,10 +96,10 @@ function SlideThumbnail({
           width: THUMBNAIL_OUTER_WIDTH,
           height: THUMBNAIL_OUTER_HEIGHT,
           borderRadius: 8,
-          outline: active ? "3px solid #2E5E3E" : "1px solid rgba(216,235,208,0.9)",
+          outline: active ? `3px solid ${PANEL_ACCENT}` : "1px solid rgba(204,212,202,0.9)",
           outlineOffset: active ? 0 : -1,
           boxShadow: active
-            ? "0 14px 26px rgba(25,56,36,0.32), 0 0 0 4px rgba(46,94,62,0.14)"
+            ? "0 14px 26px rgba(20,26,22,0.24), 0 0 0 4px rgba(34,59,42,0.13)"
             : "0 4px 10px rgba(0,0,0,0.12)",
           background: "#fff",
         }}
@@ -101,11 +108,11 @@ function SlideThumbnail({
           <>
             <div
               className="absolute inset-x-0 top-0 z-20 h-1.5"
-              style={{ background: "linear-gradient(90deg, #7FD39A 0%, #2E5E3E 100%)" }}
+              style={{ background: "linear-gradient(90deg, #9AA895 0%, #223B2A 100%)" }}
             />
             <div
               className="absolute right-1.5 top-1.5 z-20 rounded-full px-1.5 py-0.5 text-[8px] font-bold tracking-[0.18em] text-white"
-              style={{ background: "rgba(25,56,36,0.84)" }}
+              style={{ background: "rgba(20,26,22,0.84)" }}
             >
               NOW
             </div>
@@ -131,10 +138,10 @@ function SlideThumbnail({
       <span
         className="text-[10px] font-mono tabular-nums transition-all"
         style={{
-          color: active ? "#173620" : "#86C59A",
+          color: active ? PANEL_TEXT : PANEL_MUTED,
           fontWeight: active ? 800 : 600,
           letterSpacing: active ? "0.08em" : "0.04em",
-          background: active ? "rgba(46,94,62,0.12)" : "transparent",
+          background: active ? "rgba(34,59,42,0.1)" : "transparent",
           borderRadius: 999,
           padding: active ? "2px 8px" : "0px",
         }}
@@ -175,40 +182,45 @@ function SeparatorThumbnail({
           width: THUMBNAIL_OUTER_WIDTH,
           height: THUMBNAIL_OUTER_HEIGHT,
           ...bgStyle,
-          borderRadius: 8,
-          outline: active ? "3px solid #2E5E3E" : "2px dashed #86C59A",
+          borderRadius: 10,
+          outline: active ? `3px solid ${PANEL_ACCENT}` : "2px solid #7D867F",
           boxShadow: active
-            ? "0 14px 26px rgba(25,56,36,0.28), 0 0 0 4px rgba(46,94,62,0.14)"
-            : "0 4px 10px rgba(0,0,0,0.12)",
+            ? "0 14px 26px rgba(20,26,22,0.22), 0 0 0 4px rgba(34,59,42,0.13)"
+            : "0 8px 18px rgba(20,26,22,0.16)",
         }}
       >
         {active && (
           <div
             className="absolute inset-x-0 top-0 z-20 h-1.5"
-            style={{ background: "linear-gradient(90deg, #7FD39A 0%, #2E5E3E 100%)" }}
+            style={{ background: "linear-gradient(90deg, #9AA895 0%, #223B2A 100%)" }}
           />
         )}
         {settings.bg_type === "image" && settings.overlay_opacity > 0 && (
           <div className="absolute inset-0" style={{ backgroundColor: `rgba(0,0,0,${settings.overlay_opacity})` }} />
         )}
-        <div className="absolute inset-0" style={{ background: "rgba(0,0,0,0.35)" }} />
-        <div className="relative flex flex-col items-center gap-1">
-          <span className="text-[9px] font-semibold tracking-wide text-white/90">곡 구분</span>
-          <span className="text-[7px] font-medium text-white/65">빈 슬라이드</span>
+        <div className="absolute inset-0" style={{ background: "linear-gradient(135deg, rgba(20,26,22,0.78), rgba(34,59,42,0.58))" }} />
+        <div className="absolute inset-x-2 top-2 h-px bg-white/45" />
+        <div className="absolute inset-x-2 bottom-2 h-px bg-white/35" />
+        <div className="relative flex flex-col items-center gap-1.5">
+          <span className="rounded-full px-2 py-0.5 text-[8px] font-bold tracking-[0.18em] text-white" style={{ background: "rgba(255,255,255,0.18)", border: "1px solid rgba(255,255,255,0.28)" }}>
+            구분
+          </span>
+          <span className="text-[10px] font-semibold tracking-wide text-white">곡 구분 슬라이드</span>
+          <span className="text-[7px] font-medium text-white/70">빈 화면</span>
         </div>
       </div>
       <span
         className="text-[10px] font-mono tabular-nums transition-all"
         style={{
-          color: active ? "#173620" : "#86C59A",
+          color: active ? PANEL_TEXT : PANEL_MUTED,
           fontWeight: active ? 800 : 600,
           letterSpacing: active ? "0.08em" : "0.04em",
-          background: active ? "rgba(46,94,62,0.12)" : "transparent",
+          background: active ? "rgba(34,59,42,0.1)" : "transparent",
           borderRadius: 999,
           padding: active ? "2px 8px" : "0px",
         }}
       >
-        {String(index + 1).padStart(2, "0")}
+        {String(index + 1).padStart(2, "0")} · 구분
       </span>
     </button>
   );
@@ -218,26 +230,36 @@ function ThumbnailStrip({
   previewItems,
   safeIndex,
   onSelect,
+  orientation = "horizontal",
 }: {
   previewItems: PreviewItem[];
   safeIndex: number;
   onSelect: (i: number) => void;
+  orientation?: "horizontal" | "vertical";
 }) {
   const activeRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    activeRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
-  }, [safeIndex]);
+    activeRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: orientation === "vertical" ? "center" : "nearest",
+      inline: orientation === "vertical" ? "nearest" : "center",
+    });
+  }, [safeIndex, orientation]);
 
   return (
     <div
-      className="flex-shrink-0 px-4 py-4 flex gap-3 overflow-x-auto"
+      className={
+        orientation === "vertical"
+          ? "h-full px-4 py-5 flex flex-col gap-4 overflow-y-auto overflow-x-hidden"
+          : "flex-shrink-0 px-4 py-4 flex gap-3 overflow-x-auto"
+      }
       style={{
-        borderTop: "1px solid #D8EBD0",
-        background: "linear-gradient(180deg, #FCFEFA 0%, #F2F8EE 100%)",
-        boxShadow: "inset 0 1px 0 rgba(255,255,255,0.9)",
+        borderTop: orientation === "vertical" ? "none" : `1px solid ${PANEL_BORDER}`,
+        background: orientation === "vertical" ? "transparent" : "linear-gradient(180deg, #F8F8F5 0%, #EEF2EC 100%)",
+        boxShadow: orientation === "vertical" ? "none" : "inset 0 1px 0 rgba(255,255,255,0.9)",
         scrollbarWidth: "thin",
-        scrollbarColor: "#D8EBD0 transparent",
+        scrollbarColor: "#C9D1C8 transparent",
       }}
     >
       {previewItems.map((item, i) => (
@@ -268,7 +290,7 @@ function ThumbnailStrip({
 // ── 섹션 헤더 ──────────────────────────────────────────
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <p className="text-[11px] font-semibold uppercase tracking-widest mb-2.5" style={{ color: "#86C59A" }}>
+    <p className="text-[11px] font-semibold uppercase tracking-widest mb-2.5" style={{ color: PANEL_MUTED }}>
       {children}
     </p>
   );
@@ -292,8 +314,8 @@ function Toggle({
       onClick={() => onChange(!value)}
     >
       <div>
-        <span className="text-sm font-medium select-none" style={{ color: "#1a3824" }}>{label}</span>
-        {sub && <span className="text-xs ml-1.5 select-none" style={{ color: "#86C59A" }}>{sub}</span>}
+        <span className="text-sm font-semibold select-none" style={{ color: PANEL_TEXT }}>{label}</span>
+        {sub && <span className="text-xs ml-1.5 select-none" style={{ color: PANEL_MUTED }}>{sub}</span>}
       </div>
       <div
         className="relative flex-shrink-0 transition-colors"
@@ -301,7 +323,8 @@ function Toggle({
           width: 36,
           height: 20,
           borderRadius: 999,
-          background: value ? "#2E5E3E" : "#D8EBD0",
+          background: value ? PANEL_ACCENT : "#DDE3DA",
+          border: `1px solid ${value ? PANEL_ACCENT : "#C9D1C8"}`,
         }}
       >
         <div
@@ -367,7 +390,7 @@ function SettingsContent({
           onClick={onRestoreCurrentSlide}
           disabled={!canRestoreCurrentSlide}
           className="w-full inline-flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold transition-all disabled:opacity-40"
-          style={{ background: "#F2F7F0", border: "1px solid #D8EBD0", color: "#2E5E3E" }}
+          style={{ background: PANEL_SOFT, border: `1px solid ${PANEL_BORDER}`, color: PANEL_ACCENT }}
         >
           <RotateCcw size={13} />
           가사 되돌리기
@@ -392,7 +415,7 @@ function SettingsContent({
         <div>
           <SectionLabel>
             오버레이 투명도
-            <span className="normal-case font-normal text-[11px] ml-1" style={{ color: "#5BAA72" }}>
+            <span className="normal-case font-normal text-[11px] ml-1" style={{ color: PANEL_MUTED }}>
               {Math.round(activeSettings.overlay_opacity * 100)}%
             </span>
           </SectionLabel>
@@ -403,7 +426,7 @@ function SettingsContent({
             step={0.05}
             value={activeSettings.overlay_opacity}
             onChange={(e) => activeUpdate({ overlay_opacity: parseFloat(e.target.value) })}
-            className="w-full accent-[#2E5E3E]"
+            className="w-full accent-[#223B2A]"
           />
         </div>
       )}
@@ -416,9 +439,9 @@ function SettingsContent({
           onChange={(e) => activeUpdate({ font_family: e.target.value })}
           className="w-full rounded-xl px-3 py-2 text-sm focus:outline-none transition-colors"
           style={{
-            background: "#F2F7F0",
-            border: "1px solid #D8EBD0",
-            color: "#1a3824",
+            background: "#FFFFFF",
+            border: `1px solid ${PANEL_BORDER}`,
+            color: PANEL_TEXT,
           }}
         >
           {FONTS.map((f) => (
@@ -431,7 +454,7 @@ function SettingsContent({
       <div>
         <SectionLabel>
           폰트 크기
-          <span className="normal-case font-normal text-[11px] ml-1" style={{ color: "#5BAA72" }}>
+          <span className="normal-case font-normal text-[11px] ml-1" style={{ color: PANEL_MUTED }}>
             {activeSettings.font_size}pt
           </span>
         </SectionLabel>
@@ -442,9 +465,9 @@ function SettingsContent({
           step={2}
           value={activeSettings.font_size}
           onChange={(e) => activeUpdate({ font_size: parseInt(e.target.value) })}
-          className="w-full accent-[#2E5E3E]"
+          className="w-full accent-[#223B2A]"
         />
-        <div className="flex justify-between text-[10px] mt-1" style={{ color: "#B8DBBF" }}>
+        <div className="flex justify-between text-[10px] mt-1" style={{ color: "#8B958D" }}>
           <span>20pt</span>
           <span>60pt</span>
         </div>
@@ -464,9 +487,9 @@ function SettingsContent({
         <SectionLabel>텍스트 위치</SectionLabel>
         <div className="grid grid-cols-3 gap-2">
           {[
-            { label: "상단", y: 30 },
-            { label: "중앙", y: 50 },
-            { label: "하단", y: 70 },
+            { label: "상단", y: TEXT_Y_PRESETS[0] },
+            { label: "중앙", y: TEXT_Y_PRESETS[1] },
+            { label: "하단", y: TEXT_Y_PRESETS[2] },
           ].map((preset) => {
             const active = activeSettings.text_position.y === preset.y;
             return (
@@ -475,9 +498,9 @@ function SettingsContent({
                 onClick={() => activeUpdate({ text_position: { x: 50, y: preset.y } })}
                 className="py-2 rounded-xl text-xs font-medium transition-all"
                 style={{
-                  background: active ? "rgba(46,94,62,0.08)" : "transparent",
-                  border: `1px solid ${active ? "#2E5E3E" : "#D8EBD0"}`,
-                  color: active ? "#2E5E3E" : "#86C59A",
+                  background: active ? PANEL_ACCENT : "#FFFFFF",
+                  border: `1px solid ${active ? PANEL_ACCENT : PANEL_BORDER}`,
+                  color: active ? "#FFFFFF" : PANEL_MUTED,
                 }}
               >
                 {preset.label}
@@ -728,8 +751,13 @@ export default function Step3() {
         e.target instanceof HTMLSelectElement
       )
         return;
-      if (e.key === "ArrowLeft") setPreviewIndex((i) => Math.max(0, i - 1));
-      else if (e.key === "ArrowRight") setPreviewIndex((i) => Math.min(previewItems.length - 1, i + 1));
+      if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+        e.preventDefault();
+        setPreviewIndex((i) => Math.max(0, i - 1));
+      } else if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+        e.preventDefault();
+        setPreviewIndex((i) => Math.min(previewItems.length - 1, i + 1));
+      }
     },
     [previewItems.length]
   );
@@ -829,22 +857,29 @@ export default function Step3() {
   };
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden" style={{ background: "#F2F7F0" }}>
+    <div className="min-h-screen xl:h-screen flex flex-col overflow-x-hidden overflow-y-auto xl:overflow-hidden" style={{ background: "#ECEEE9" }}>
       <Header step={3} />
 
       {/* 전체화면 오버레이 */}
       {fullscreen && (
         <div
-          className="fixed inset-0 z-50 bg-black flex items-center justify-center"
+          className="fixed inset-0 z-50 flex items-center justify-center"
+          style={{ background: "radial-gradient(circle at center, #49584E 0%, #2C352F 54%, #171B18 100%)" }}
           onKeyDown={(e) => {
-            if (e.key === "ArrowLeft") setPreviewIndex((i) => Math.max(0, i - 1));
-            if (e.key === "ArrowRight") setPreviewIndex((i) => Math.min(previewItems.length - 1, i + 1));
+            if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+              e.preventDefault();
+              setPreviewIndex((i) => Math.max(0, i - 1));
+            }
+            if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+              e.preventDefault();
+              setPreviewIndex((i) => Math.min(previewItems.length - 1, i + 1));
+            }
           }}
           tabIndex={0}
           ref={(el) => el?.focus()}
         >
-          <div className="w-full h-full flex items-center justify-center">
-            <div className="w-full" style={{ aspectRatio: "16/9", maxHeight: "100vh", maxWidth: "calc(100vh * 16 / 9)" }}>
+          <div className="w-full h-full flex items-center justify-center px-6 py-6 sm:px-10 sm:py-10">
+            <div className="w-full" style={{ aspectRatio: "16/9", maxHeight: "100%", maxWidth: "calc(100vh * 16 / 9)" }}>
               {activeItem?.type === "separator" ? (
                 <SeparatorPreview fullscreenMode />
               ) : (
@@ -890,40 +925,63 @@ export default function Step3() {
       )}
 
       {/* 메인 레이아웃 */}
-      <main className="flex-1 flex flex-col lg:flex-row overflow-hidden min-h-0">
+      <main className="flex-none xl:flex-1 xl:min-h-0 flex flex-col xl:grid xl:grid-cols-[152px_minmax(0,1fr)_320px] overflow-visible xl:overflow-hidden pb-3 xl:pb-24">
+
+        {/* 좌: 썸네일 레일 (데스크탑) */}
+        <aside
+          className="hidden xl:flex flex-col min-h-0"
+          style={{ background: "#DDE4DA", borderRight: "1px solid #CCD4CA" }}
+        >
+          <div className="px-5 pt-5 pb-4" style={{ borderBottom: "1px solid #C9D1C8" }}>
+            <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: "#7D867F" }}>
+              슬라이드
+            </p>
+            <p className="text-2xl font-semibold tracking-tight mt-3" style={{ color: "#182019" }}>
+              {previewItems.length}장
+            </p>
+          </div>
+          <div className="flex-1 min-h-0">
+            <ThumbnailStrip
+              previewItems={previewItems}
+              safeIndex={safeIndex}
+              onSelect={setPreviewIndex}
+              orientation="vertical"
+            />
+          </div>
+        </aside>
 
         {/* 미리보기 영역 */}
-        <div className="flex-1 flex flex-col overflow-hidden min-h-0" style={{ background: "#F2F7F0" }}>
+        <div className="flex-none xl:flex-1 min-w-0 flex flex-col overflow-hidden xl:min-h-0 m-4 sm:m-6 xl:mr-4 xl:rounded-[28px] rounded-[24px]" style={{ background: "#F8F8F5", border: "1px solid #D6DAD3", boxShadow: "0 18px 48px rgba(20,26,22,0.08)" }}>
 
           {/* 미리보기 헤더 */}
           <div
             className="flex-shrink-0 flex items-center justify-between px-4 sm:px-5 py-3"
-            style={{ background: "white", borderBottom: "1px solid #D8EBD0" }}
+            style={{ background: "#F8F8F5", borderBottom: "1px solid #DFE3DD" }}
           >
             <div className="flex items-center gap-2">
-              <Monitor size={14} style={{ color: "#86C59A" }} />
-              <span className="text-sm font-semibold" style={{ color: "#1a3824" }}>슬라이드 미리보기</span>
+              <Monitor size={14} style={{ color: "#6B746C" }} />
+              <span className="text-sm font-semibold" style={{ color: "#151A16" }}>슬라이드 미리보기</span>
             </div>
             <div className="flex items-center gap-1">
               <button
                 onClick={() => setPreviewIndex(Math.max(0, safeIndex - 1))}
                 disabled={safeIndex === 0}
                 className="p-1.5 rounded-lg transition-all disabled:opacity-30"
-                style={{ color: "#5BAA72" }}
-                onMouseEnter={(e) => { e.currentTarget.style.background = "#F2F7F0"; }}
+                style={{ color: PANEL_MUTED }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = PANEL_SOFT; }}
                 onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
               >
                 <ChevronLeft size={15} />
               </button>
-              <span className="text-xs font-mono tabular-nums px-1" style={{ color: "#86C59A" }}>
+              <span className="text-xs font-mono tabular-nums px-1" style={{ color: PANEL_MUTED }}>
                 {String(safeIndex + 1).padStart(2, "0")} / {String(previewItems.length).padStart(2, "0")}
               </span>
               <button
                 onClick={() => setPreviewIndex(Math.min(previewItems.length - 1, safeIndex + 1))}
                 disabled={safeIndex >= previewItems.length - 1}
                 className="p-1.5 rounded-lg transition-all disabled:opacity-30"
-                style={{ color: "#5BAA72" }}
-                onMouseEnter={(e) => { e.currentTarget.style.background = "#F2F7F0"; }}
+                style={{ color: PANEL_MUTED }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = PANEL_SOFT; }}
                 onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
               >
                 <ChevronRight size={15} />
@@ -931,9 +989,9 @@ export default function Step3() {
               <button
                 onClick={() => { setFullscreen(true); document.documentElement.requestFullscreen?.(); }}
                 className="ml-2 flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all"
-                style={{ background: "rgba(46,94,62,0.08)", color: "#2E5E3E", border: "1px solid rgba(46,94,62,0.15)" }}
-                onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(46,94,62,0.15)"; }}
-                onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(46,94,62,0.08)"; }}
+                style={{ background: PANEL_SOFT, color: PANEL_ACCENT, border: `1px solid ${PANEL_BORDER}` }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = "#E3E8E1"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = PANEL_SOFT; }}
               >
                 <Maximize2 size={13} />
               </button>
@@ -942,11 +1000,12 @@ export default function Step3() {
 
           {/* 슬라이드 프리뷰 */}
           <div
-            className="flex-1 flex items-center justify-center px-3 sm:px-6 pt-3 sm:pt-4 pb-2 overflow-hidden"
+            className="flex-none xl:flex-1 flex items-center justify-center px-4 sm:px-8 xl:px-10 pt-5 sm:pt-6 pb-5 overflow-hidden"
+            style={{ background: "linear-gradient(145deg, #DCE4DA 0%, #C9D4C8 48%, #B8C5B7 100%)" }}
             onTouchStart={handleTouchStart}
             onTouchEnd={handleTouchEnd}
           >
-            <div className="w-full max-w-3xl">
+            <div className="w-full max-w-4xl">
               {activeItem?.type === "separator" ? (
                 <SeparatorPreview />
               ) : (
@@ -969,33 +1028,25 @@ export default function Step3() {
           </div>
 
           {/* 드래그 안내 */}
-          <p className="flex-shrink-0 text-xs text-center pb-2 hidden lg:block" style={{ color: "#86C59A" }}>
+          <p className="flex-shrink-0 text-xs text-center py-3 hidden lg:block" style={{ color: "#616A62" }}>
             슬라이드 안에서 바로 가사를 수정하고, 위치 이동과 박스 너비를 조정하세요.
           </p>
 
-          {/* 썸네일 스트립 — 데스크탑 전용 */}
-          <div className="hidden lg:block">
-            <ThumbnailStrip
-              previewItems={previewItems}
-              safeIndex={safeIndex}
-              onSelect={setPreviewIndex}
-            />
-          </div>
         </div>
 
         {/* 우: 설정 패널 (데스크탑) */}
         <div
-          className="hidden lg:flex flex-col flex-shrink-0 overflow-hidden"
-          style={{ width: 272, background: "white", borderLeft: "1px solid #D8EBD0" }}
+          className="hidden xl:flex flex-col flex-shrink-0 overflow-hidden m-6 ml-0 rounded-[28px]"
+          style={{ background: "#F8F8F5", border: "1px solid #D6DAD3", boxShadow: "0 18px 42px rgba(20,26,22,0.06)" }}
         >
-          {/* 출력 방식 */}
-          <div className="flex-shrink-0 px-4 pt-4 pb-3" style={{ borderBottom: "1px solid #D8EBD0" }}>
-            <p className="text-[11px] font-semibold uppercase tracking-widest mb-2.5" style={{ color: "#86C59A" }}>
-              출력 방식
+          {/* 디자인 범위 */}
+          <div className="flex-shrink-0 px-5 pt-5 pb-4" style={{ borderBottom: "1px solid #DFE3DD" }}>
+            <p className="text-xs font-semibold uppercase tracking-widest mb-2.5" style={{ color: "#7D867F" }}>
+              디자인 설정
             </p>
             <div
-              className="flex rounded-xl overflow-hidden"
-              style={{ border: "1px solid #D8EBD0", background: "#F2F7F0" }}
+              className="flex rounded-2xl overflow-hidden p-1"
+              style={{ border: "1px solid #CDD3CC", background: "#EEF2EC" }}
             >
               {[
                 { label: "모든 곡 함께", icon: <Layers size={12} />, merged: true },
@@ -1008,9 +1059,9 @@ export default function Step3() {
                     onClick={() => handleMergeToggle(opt.merged)}
                     className="flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-semibold transition-all"
                     style={{
-                      background: active ? "#2E5E3E" : "transparent",
-                      color: active ? "white" : "#86C59A",
-                      borderRadius: active ? 10 : 0,
+                      background: active ? "#223B2A" : "transparent",
+                      color: active ? "white" : "#4F5C52",
+                      borderRadius: active ? 14 : 0,
                     }}
                   >
                     {opt.icon}
@@ -1030,14 +1081,14 @@ export default function Step3() {
                       onClick={() => handleExportSongChange(song.id)}
                       className="w-full text-left px-3 py-2 rounded-xl text-xs font-medium transition-all"
                       style={{
-                        background: active ? "rgba(46,94,62,0.07)" : "transparent",
-                        border: `1px solid ${active ? "rgba(46,94,62,0.2)" : "#F2F7F0"}`,
-                        color: active ? "#2E5E3E" : "#4a7a56",
+                        background: active ? "#FFFFFF" : "transparent",
+                        border: `1px solid ${active ? "#CDD3CC" : "transparent"}`,
+                        color: active ? "#223B2A" : "#4F5C52",
                       }}
                     >
                       {song.title}
                       {song.artist && (
-                        <span className="ml-1.5" style={{ color: "#86C59A", fontWeight: 400 }}>{song.artist}</span>
+                        <span className="ml-1.5" style={{ color: "#7D867F", fontWeight: 400 }}>{song.artist}</span>
                       )}
                     </button>
                   );
@@ -1046,14 +1097,14 @@ export default function Step3() {
             )}
 
             {!settings.merge_songs && (
-              <p className="text-[10px] mt-2" style={{ color: "#B8DBBF" }}>
+              <p className="text-[10px] mt-2" style={{ color: "#7D867F" }}>
                 {songs.find((s) => s.id === activeSongId)?.title ?? ""} 디자인 설정 중
               </p>
             )}
           </div>
 
           {/* 나머지 설정 */}
-          <div className="flex-1 overflow-y-auto px-4 py-4">
+          <div className="flex-1 overflow-y-auto px-5 py-5">
             <SettingsContent
               activeSettings={activeSettings}
               settings={settings}
@@ -1073,7 +1124,7 @@ export default function Step3() {
       </main>
 
       {/* 모바일 전용 썸네일 스트립 — 설정 패널 닫혔을 때만 표시 */}
-      <div className={`lg:hidden flex-shrink-0${settingsOpen ? " hidden" : ""}`}>
+      <div className="xl:hidden flex-shrink-0 mx-4 sm:mx-6 rounded-[22px] overflow-hidden" style={{ border: `1px solid ${PANEL_BORDER}`, boxShadow: "0 12px 28px rgba(20,26,22,0.08)" }}>
         <ThumbnailStrip
           previewItems={previewItems}
           safeIndex={safeIndex}
@@ -1082,19 +1133,19 @@ export default function Step3() {
       </div>
 
       {/* 모바일: 디자인 설정 패널 — main 바깥, 썸네일 아래 */}
-      <div className="lg:hidden flex-shrink-0" style={{ background: "white", borderTop: "1px solid #D8EBD0" }}>
+      <div className="xl:hidden flex-shrink-0 mx-4 sm:mx-6 mt-3 mb-32 rounded-[24px] overflow-hidden" style={{ background: "#F8F8F5", border: "1px solid #D6DAD3", boxShadow: "0 12px 28px rgba(20,26,22,0.08)" }}>
         <button
           onClick={() => setSettingsOpen((v) => !v)}
           className="w-full flex items-center justify-between px-5 py-3"
         >
           <div className="flex items-center gap-2">
-            <Settings2 size={14} style={{ color: "#2E5E3E" }} />
-            <span className="text-sm font-semibold" style={{ color: "#1a3824" }}>디자인 설정</span>
+            <Settings2 size={14} style={{ color: "#223B2A" }} />
+            <span className="text-sm font-semibold" style={{ color: "#151A16" }}>디자인 설정</span>
           </div>
           <ChevronUp
             size={15}
             style={{
-              color: "#86C59A",
+              color: "#6B746C",
               transform: settingsOpen ? "rotate(180deg)" : "rotate(0deg)",
               transition: "transform 0.2s",
             }}
@@ -1102,13 +1153,13 @@ export default function Step3() {
         </button>
         {settingsOpen && (
           <div
-            className="overflow-y-auto px-4 py-4 flex flex-col gap-5"
-            style={{ background: "white", maxHeight: "40vh", borderTop: "1px solid #D8EBD0" }}
+            className="px-4 py-4 flex flex-col gap-5"
+            style={{ background: "#F8F8F5", borderTop: "1px solid #DFE3DD" }}
           >
-            {/* 출력 방식 */}
+            {/* 디자인 범위 */}
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-widest mb-2.5" style={{ color: "#86C59A" }}>출력 방식</p>
-              <div className="flex rounded-xl overflow-hidden" style={{ border: "1px solid #D8EBD0", background: "#F2F7F0" }}>
+              <p className="text-[11px] font-semibold uppercase tracking-widest mb-2.5" style={{ color: "#7D867F" }}>디자인 설정</p>
+              <div className="flex rounded-2xl overflow-hidden p-1" style={{ border: "1px solid #CDD3CC", background: "#EEF2EC" }}>
                 {[
                   { label: "모든 곡 함께", merged: true },
                   { label: "곡별 따로", merged: false },
@@ -1120,9 +1171,9 @@ export default function Step3() {
                       onClick={() => handleMergeToggle(opt.merged)}
                       className="flex-1 py-2 text-xs font-semibold transition-all"
                       style={{
-                        background: active ? "#2E5E3E" : "transparent",
-                        color: active ? "white" : "#86C59A",
-                        borderRadius: active ? 10 : 0,
+                        background: active ? "#223B2A" : "transparent",
+                        color: active ? "white" : "#4F5C52",
+                        borderRadius: active ? 14 : 0,
                       }}
                     >
                       {opt.label}
@@ -1138,9 +1189,9 @@ export default function Step3() {
                       onClick={() => handleExportSongChange(song.id)}
                       className="w-full text-left px-3 py-2 rounded-xl text-xs font-medium transition-all"
                       style={{
-                        background: activeSongId === song.id ? "rgba(46,94,62,0.07)" : "transparent",
-                        border: `1px solid ${activeSongId === song.id ? "rgba(46,94,62,0.2)" : "#F2F7F0"}`,
-                        color: activeSongId === song.id ? "#2E5E3E" : "#4a7a56",
+                        background: activeSongId === song.id ? "#FFFFFF" : "transparent",
+                        border: `1px solid ${activeSongId === song.id ? "#CDD3CC" : "transparent"}`,
+                        color: activeSongId === song.id ? "#223B2A" : "#4F5C52",
                       }}
                     >
                       {song.title}
@@ -1149,14 +1200,14 @@ export default function Step3() {
                 </div>
               )}
             </div>
-                  <SettingsContent
-                    activeSettings={activeSettings}
-                    settings={settings}
-                    activeUpdate={activeUpdate}
-                    updateSettings={trackedUpdateSettings}
-                    uploadedBgUrl={uploadedBgUrl}
-                    setUploadedBgUrl={setUploadedBgUrl}
-                    bgColorValue={bgColorValue}
+            <SettingsContent
+              activeSettings={activeSettings}
+              settings={settings}
+              activeUpdate={activeUpdate}
+              updateSettings={trackedUpdateSettings}
+              uploadedBgUrl={uploadedBgUrl}
+              setUploadedBgUrl={setUploadedBgUrl}
+              bgColorValue={bgColorValue}
               setBgColorValue={setBgColorValue}
               canRestoreCurrentSlide={!!canRestoreCurrentSlide}
               onRestoreCurrentSlide={handleRestoreCurrentSlide}
@@ -1168,36 +1219,40 @@ export default function Step3() {
 
       {/* 하단 버튼 바 */}
       <div
-        className="flex-shrink-0 flex flex-row items-center justify-between gap-3 px-4 sm:px-5 py-4"
-        style={{ background: "white", borderTop: "1px solid #D8EBD0" }}
+        className="fixed inset-x-0 bottom-4 px-4 sm:px-6 pointer-events-none z-40"
       >
-        <button
-          onClick={() => router.push("/editor/step2")}
-          className="inline-flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl text-sm font-semibold transition-all flex-1 sm:flex-none min-w-0"
-          style={{ background: "#F2F7F0", border: "1px solid #D8EBD0", color: "#2E5E3E" }}
+        <div
+          className="max-w-7xl mx-auto px-3.5 sm:px-6 py-3 sm:py-4 flex items-center justify-between gap-2.5 sm:gap-3 rounded-[24px] pointer-events-auto"
+          style={{ background: "rgba(246,247,244,0.92)", border: "1px solid rgba(211,216,208,0.95)", boxShadow: "0 20px 40px rgba(20,26,22,0.12)", backdropFilter: "blur(16px)" }}
         >
-          <ArrowLeft size={15} />
-          이전
-        </button>
+          <button
+            onClick={() => router.push("/editor/step2")}
+            className="inline-flex min-w-0 items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-3 rounded-2xl text-[12px] sm:text-sm font-semibold flex-1 xl:flex-none"
+            style={{ background: "#FFFFFF", color: "#1F2A22", border: "1px solid #D3D8D0" }}
+          >
+            <ArrowLeft size={15} />
+            이전
+          </button>
 
-        <button
-          onClick={handleGenerate}
-          disabled={generating || slides.length === 0}
-          className="inline-flex items-center justify-center gap-2 px-4 sm:px-7 py-2.5 rounded-xl text-sm font-semibold text-white transition-all disabled:opacity-40 flex-1 sm:flex-none min-w-0"
-          style={{ background: "#2E5E3E", boxShadow: slides.length > 0 && !generating ? "0 4px 16px rgba(46,94,62,0.25)" : "none" }}
-        >
-          {generating ? (
-            <>
-              <Loader2 size={15} className="animate-spin" />
-              PPT 생성 중...
-            </>
-          ) : (
-            <>
-              <Wand2 size={15} />
-              PPT 생성
-            </>
-          )}
-        </button>
+          <button
+            onClick={handleGenerate}
+            disabled={generating || slides.length === 0}
+            className="inline-flex min-w-0 items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-3 rounded-2xl text-[12px] sm:text-sm font-semibold text-white transition-all disabled:opacity-40 flex-1 xl:flex-none"
+            style={{ background: "#223B2A", boxShadow: slides.length > 0 && !generating ? "0 12px 30px rgba(34,59,42,0.16)" : "none" }}
+          >
+            {generating ? (
+              <>
+                <Loader2 size={15} className="animate-spin" />
+                PPT 생성 중...
+              </>
+            ) : (
+              <>
+                <Wand2 size={15} />
+                PPT 생성
+              </>
+            )}
+          </button>
+        </div>
       </div>
     </div>
   );

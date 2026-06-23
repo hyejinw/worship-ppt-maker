@@ -19,7 +19,7 @@ interface SlidePreviewProps {
   thumbnail?: boolean;
 }
 
-const SNAP_POSITIONS = [30, 50, 70];
+const SNAP_POSITIONS = [25, 50, 75];
 const SNAP_X_POSITIONS = [20, 50, 80];
 const SNAP_THRESHOLD = 5;
 
@@ -242,17 +242,22 @@ export function SlidePreview({
     return { backgroundColor: "#000" };
   })();
 
+  const frameStyle: React.CSSProperties = fullscreen
+    ? {
+        height: "100%",
+        borderRadius: "10px",
+        boxShadow: "0 0 0 2px rgba(235,245,238,0.18), 0 28px 70px rgba(0,0,0,0.5)",
+      }
+    : thumbnail
+    ? { aspectRatio: "16/9", borderRadius: "6px" }
+    : { aspectRatio: "16/9", borderRadius: "8px", boxShadow: "0 0 0 1px #1e1e1e, 0 8px 24px rgba(0,0,0,0.5)" };
+
   return (
     <div
       ref={containerRef}
       className="relative w-full select-none overflow-hidden"
       style={{
-        ...(fullscreen
-          ? { height: "100%" }
-          : thumbnail
-          ? { aspectRatio: "16/9", borderRadius: "6px" }
-          : { aspectRatio: "16/9", borderRadius: "8px", boxShadow: "0 0 0 1px #1e1e1e, 0 8px 24px rgba(0,0,0,0.5)" }
-        ),
+        ...frameStyle,
         cursor: dragging ? "grabbing" : draggingTitle ? "grabbing" : resizing ? "ew-resize" : "default",
         ...bgStyle,
       }}
@@ -272,7 +277,7 @@ export function SlidePreview({
       )}
 
       {/* 스냅 가이드라인 */}
-      {snapX !== null && (
+      {!fullscreen && snapX !== null && (
         <div
           className="absolute inset-y-0 pointer-events-none"
           style={{
@@ -283,7 +288,7 @@ export function SlidePreview({
           }}
         />
       )}
-      {snapY !== null && (
+      {!fullscreen && snapY !== null && (
         <div
           className="absolute inset-x-0 pointer-events-none"
           style={{
@@ -294,14 +299,14 @@ export function SlidePreview({
           }}
         />
       )}
-      {SNAP_POSITIONS.map((pos) => (
+      {!fullscreen && SNAP_POSITIONS.map((pos) => (
         <div
           key={pos}
           className="absolute inset-x-0 pointer-events-none opacity-20"
           style={{ top: `${pos}%`, height: "1px", backgroundColor: "#4a9eff" }}
         />
       ))}
-      {SNAP_X_POSITIONS.map((pos) => (
+      {!fullscreen && SNAP_X_POSITIONS.map((pos) => (
         <div
           key={`x-${pos}`}
           className="absolute inset-y-0 pointer-events-none opacity-20"
@@ -318,7 +323,7 @@ export function SlidePreview({
           transform: "translate(-50%, -50%)",
           width: `${textBoxWidth}%`,
           padding: "4px",
-          border: "1px dashed rgba(255,255,255,0.3)",
+          border: fullscreen ? "none" : "2px dashed rgba(255,255,255,0.58)",
           borderRadius: "4px",
           cursor: editable && !fullscreen && !isEditing ? "move" : "default",
         }}

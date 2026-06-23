@@ -16,6 +16,12 @@ const PRESETS = [
   "#fffde7", "#e8f5e9", "#e3f2fd", "#fce4ec", "#f3e5f5",
 ];
 
+const PANEL_TEXT = "#151A16";
+const PANEL_MUTED = "#6B746C";
+const PANEL_SOFT = "#EEF2EC";
+const PANEL_BORDER = "#D6DAD3";
+const PANEL_ACCENT = "#223B2A";
+
 function isValidHex(v: string) {
   return /^#[0-9a-fA-F]{6}$/.test(v);
 }
@@ -45,20 +51,20 @@ export function ColorPicker({ value, onChange, label }: ColorPickerProps) {
         onClick={() => setOpen((o) => !o)}
         className="flex items-center gap-2.5 w-full px-3 py-2.5 rounded-xl transition-all"
         style={{
-          background: "#F2F7F0",
-          border: `1.5px solid ${open ? "#2E5E3E" : "#D8EBD0"}`,
+          background: "#FFFFFF",
+          border: `1.5px solid ${open ? PANEL_ACCENT : PANEL_BORDER}`,
         }}
       >
         <div
           className="w-5 h-5 rounded-md flex-shrink-0"
           style={{ backgroundColor: safeValue, boxShadow: "0 0 0 1px rgba(0,0,0,0.12)" }}
         />
-        <span className="text-sm font-mono" style={{ color: "#1a3824" }}>{safeValue}</span>
-        {label && <span className="ml-auto text-xs" style={{ color: "#86C59A" }}>{label}</span>}
+        <span className="text-sm font-mono" style={{ color: PANEL_TEXT }}>{safeValue}</span>
+        {label && <span className="ml-auto text-xs" style={{ color: PANEL_MUTED }}>{label}</span>}
         <svg
           width="12" height="12" viewBox="0 0 12 12" fill="none"
           className="ml-auto flex-shrink-0 transition-transform"
-          style={{ transform: open ? "rotate(180deg)" : "rotate(0deg)", color: "#86C59A" }}
+          style={{ transform: open ? "rotate(180deg)" : "rotate(0deg)", color: PANEL_MUTED }}
         >
           <path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
@@ -68,7 +74,7 @@ export function ColorPicker({ value, onChange, label }: ColorPickerProps) {
       {open && (
         <div
           className="rounded-2xl p-3 flex flex-col gap-3"
-          style={{ background: "#FAFCFA", border: "1px solid #D8EBD0" }}
+          style={{ background: PANEL_SOFT, border: `1px solid ${PANEL_BORDER}` }}
         >
           {/* 현재 색상 + hex 입력 */}
           <div className="flex items-center gap-2">
@@ -90,7 +96,7 @@ export function ColorPicker({ value, onChange, label }: ColorPickerProps) {
               onChange={(e) => handleHexInput(e.target.value)}
               onBlur={() => { if (!isValidHex(draft)) setDraft(safeValue); }}
               className="flex-1 min-w-0 text-sm font-mono rounded-lg px-2.5 py-1.5 focus:outline-none"
-              style={{ background: "white", border: "1px solid #D8EBD0", color: "#1a3824" }}
+              style={{ background: "#FFFFFF", border: `1px solid ${PANEL_BORDER}`, color: PANEL_TEXT }}
               spellCheck={false}
               maxLength={7}
               placeholder="#000000"
@@ -99,7 +105,7 @@ export function ColorPicker({ value, onChange, label }: ColorPickerProps) {
 
           {/* 프리셋 팔레트 */}
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-widest mb-2" style={{ color: "#86C59A" }}>
+            <p className="text-[10px] font-semibold uppercase tracking-widest mb-2" style={{ color: PANEL_MUTED }}>
               색상 팔레트
             </p>
             <div className="grid grid-cols-10 gap-1">
@@ -114,7 +120,7 @@ export function ColorPicker({ value, onChange, label }: ColorPickerProps) {
                     backgroundColor: hex,
                     boxShadow:
                       safeDraft === hex
-                        ? "0 0 0 2px white, 0 0 0 3.5px #2E5E3E"
+                        ? `0 0 0 2px white, 0 0 0 3.5px ${PANEL_ACCENT}`
                         : "0 0 0 1px rgba(0,0,0,0.1)",
                   }}
                 />
