@@ -2284,8 +2284,8 @@ function EditorFlowInner({
                           }
                         }
                       }}
-                    className={step2Redesign ? "flex-1 min-h-[420px] px-5 sm:px-6 py-5 text-[15px] resize-none focus:outline-none font-mono leading-relaxed" : "flex-1 px-4 sm:px-5 py-4 text-sm resize-none focus:outline-none font-mono leading-relaxed"}
-                    style={{ background: step2Redesign ? "#FFFFFF" : "#F2F7F0", color: step2Redesign ? "#151A16" : "#1a3824" }}
+                    className={step2Redesign ? "flex-1 min-h-[420px] px-5 sm:px-6 py-5 text-[15px] sm:text-[16px] resize-none focus:outline-none leading-relaxed" : "flex-1 px-4 sm:px-5 py-4 text-sm resize-none focus:outline-none leading-relaxed"}
+                    style={{ background: step2Redesign ? "#FFFFFF" : "#F2F7F0", color: step2Redesign ? "#151A16" : "#1a3824", fontFamily: '"Pretendard", sans-serif' }}
                     spellCheck={false}
                   />
                   )}
