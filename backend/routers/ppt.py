@@ -38,6 +38,7 @@ class PPTSettings(BaseModel):
     overlay_opacity: float = 0.0
     show_title: bool = True
     merge_songs: bool = True
+    include_individual_download: bool = False
     export_song_id: str | None = None
     separator_slides: bool = True
 
@@ -58,6 +59,7 @@ class GenerateRequest(BaseModel):
     songs: list[str] = []
     songs_data: list[SongData] = []
     merge_songs: bool = True
+    include_individual_download: bool = False
     export_song_id: str | None = None
 
 
@@ -65,12 +67,14 @@ class GenerateRequest(BaseModel):
 async def generate_ppt(req: GenerateRequest, background_tasks: BackgroundTasks):
     db = get_client()
     job_id = str(uuid.uuid4())
+    include_individual_download = req.merge_songs and req.include_individual_download and len(req.songs_data) > 1
 
     config = {
         "songs": req.songs,
         "slides": [s.model_dump() for s in req.slides],
         "settings": req.settings.model_dump(),
         "merge_songs": req.merge_songs,
+        "include_individual_download": include_individual_download,
         "export_song_id": req.export_song_id,
     }
 
@@ -83,7 +87,7 @@ async def generate_ppt(req: GenerateRequest, background_tasks: BackgroundTasks):
 
     background_tasks.add_task(
         _process_job, job_id, req.slides, req.settings,
-        req.songs_data, req.merge_songs, req.export_song_id,
+        req.songs_data, req.merge_songs, include_individual_download, req.export_song_id,
     )
 
     return {"job_id": job_id}
@@ -116,6 +120,7 @@ async def _process_job(
     settings: PPTSettings,
     songs_data: list[SongData],
     merge_songs: bool,
+    include_individual_download: bool,
     export_song_id: str | None,
 ):
     db = get_client()
@@ -142,7 +147,7 @@ async def _process_job(
         settings_data = settings.model_dump()
         songs_data_raw = [s.model_dump() for s in songs_data]
 
-        if merge_songs:
+        if merge_songs and not include_individual_download:
             # 모든 곡 합쳐서 하나의 pptx
             pptx_bytes = await build_pptx(
                 slides_data, settings_data,
@@ -152,12 +157,41 @@ async def _process_job(
             )
             file_path = upload_pptx(job_id, pptx_bytes)
             signed_url = create_signed_url(file_path, expires_in=3600)
+        elif merge_songs and include_individual_download:
+            # 전체 pptx와 곡별 pptx를 함께 ZIP으로
+            zip_buf = io.BytesIO()
+            with zipfile.ZipFile(zip_buf, "w", zipfile.ZIP_DEFLATED) as zf:
+                merged_pptx = await build_pptx(
+                    slides_data, settings_data,
+                    songs_data=songs_data_raw,
+                    merge_songs=True,
+                    export_song_id=None,
+                )
+                zf.writestr("00_전체.pptx", merged_pptx)
+
+                for index, song in enumerate(songs_data, start=1):
+                    pptx_bytes = await build_pptx(
+                        slides_data, settings_data,
+                        songs_data=songs_data_raw,
+                        merge_songs=False,
+                        export_song_id=song.id,
+                    )
+                    safe_title = song.title.replace("/", "_").replace("\\", "_")
+                    zf.writestr(f"{index:02d}_{safe_title}.pptx", pptx_bytes)
+
+            zip_bytes = zip_buf.getvalue()
+            file_path = upload_zip(job_id, zip_bytes)
+            signed_url = create_signed_url(file_path, expires_in=3600)
         else:
             # 곡별 따로: 각 곡마다 pptx 생성 후 ZIP
             if len(songs_data) <= 1:
                 # 곡이 하나면 그냥 단일 pptx
                 sid = songs_data[0].id if songs_data else None
-                song_settings = songs_data[0].settings.model_dump() if (songs_data and songs_data[0].settings) else settings_data
+                song_settings = (
+                    songs_data[0].settings.model_dump()
+                    if (not merge_songs and songs_data and songs_data[0].settings)
+                    else settings_data
+                )
                 pptx_bytes = await build_pptx(
                     slides_data, song_settings,
                     songs_data=songs_data_raw,
@@ -170,8 +204,8 @@ async def _process_job(
                 # 여러 곡: ZIP으로
                 zip_buf = io.BytesIO()
                 with zipfile.ZipFile(zip_buf, "w", zipfile.ZIP_DEFLATED) as zf:
-                    for song in songs_data:
-                        song_settings = song.settings.model_dump() if song.settings else settings_data
+                    for index, song in enumerate(songs_data, start=1):
+                        song_settings = song.settings.model_dump() if (not merge_songs and song.settings) else settings_data
                         pptx_bytes = await build_pptx(
                             slides_data, song_settings,
                             songs_data=songs_data_raw,
@@ -179,7 +213,7 @@ async def _process_job(
                             export_song_id=song.id,
                         )
                         safe_title = song.title.replace("/", "_").replace("\\", "_")
-                        zf.writestr(f"{safe_title}.pptx", pptx_bytes)
+                        zf.writestr(f"{index:02d}_{safe_title}.pptx", pptx_bytes)
 
                 zip_bytes = zip_buf.getvalue()
                 file_path = upload_zip(job_id, zip_bytes)

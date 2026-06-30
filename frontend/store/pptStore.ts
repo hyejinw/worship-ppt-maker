@@ -36,6 +36,7 @@ export interface PPTSettings {
   overlay_opacity: number;
   show_title: boolean;
   merge_songs: boolean;
+  include_individual_download: boolean;
   export_song_id: string | null;
   separator_slides: boolean;
 }
@@ -91,6 +92,7 @@ export const defaultSettings: PPTSettings = {
   overlay_opacity: 0.0,
   show_title: true,
   merge_songs: true,
+  include_individual_download: false,
   export_song_id: null,
   separator_slides: true,
 };

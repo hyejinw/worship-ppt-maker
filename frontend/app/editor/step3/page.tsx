@@ -302,16 +302,20 @@ function Toggle({
   onChange,
   label,
   sub,
+  disabled = false,
 }: {
   value: boolean;
   onChange: (v: boolean) => void;
   label: string;
   sub?: string;
+  disabled?: boolean;
 }) {
   return (
     <div
-      className="flex items-center justify-between gap-3 cursor-pointer py-0.5"
-      onClick={() => onChange(!value)}
+      className={`flex items-center justify-between gap-3 py-0.5 ${disabled ? "cursor-not-allowed opacity-45" : "cursor-pointer"}`}
+      onClick={() => {
+        if (!disabled) onChange(!value);
+      }}
     >
       <div>
         <span className="text-sm font-semibold select-none" style={{ color: PANEL_TEXT }}>{label}</span>
@@ -349,6 +353,7 @@ function SettingsContent({
   canRestoreCurrentSlide,
   onRestoreCurrentSlide,
   onShowTitleChange,
+  canDownloadPerSong,
 }: {
   activeSettings: PPTSettings;
   settings: PPTSettings;
@@ -361,6 +366,7 @@ function SettingsContent({
   canRestoreCurrentSlide: boolean;
   onRestoreCurrentSlide: () => void;
   onShowTitleChange: (value: boolean) => void;
+  canDownloadPerSong: boolean;
 }) {
   return (
     <div className="flex flex-col gap-5">
@@ -375,11 +381,20 @@ function SettingsContent({
             sub="하단 오른쪽"
           />
           {settings.merge_songs && (
-            <Toggle
-              value={settings.separator_slides}
-              onChange={(v) => updateSettings({ separator_slides: v })}
-              label="곡 사이 빈 슬라이드"
-            />
+            <>
+              <Toggle
+                value={settings.separator_slides}
+                onChange={(v) => updateSettings({ separator_slides: v })}
+                label="곡 사이 빈 슬라이드"
+              />
+              <Toggle
+                value={settings.include_individual_download && canDownloadPerSong}
+                onChange={(v) => updateSettings({ include_individual_download: v })}
+                label="개별 곡으로도 다운"
+                sub="전체 PPT와 함께 ZIP 저장"
+                disabled={!canDownloadPerSong}
+              />
+            </>
           )}
         </div>
       </div>
@@ -621,6 +636,9 @@ export default function Step3() {
     if (settings.merge_songs) updateSettings(patch);
     else if (activeSongId) updateSongSettings(activeSongId, patch);
   };
+  const slideSongCount = new Set(slides.map((slide) => slide.song_id).filter(Boolean)).size;
+  const exportableSongCount = Math.max(songs.length, slideSongCount);
+  const canDownloadPerSong = exportableSongCount > 1;
   const trackedUpdateSettings = (patch: Partial<PPTSettings>) => {
     pushHistorySnapshot();
     updateSettings(patch);
@@ -816,6 +834,7 @@ export default function Step3() {
         songs: songs.map((s) => s.title),
         songs_data: songsWithSettings,
         merge_songs: settings.merge_songs,
+        include_individual_download: settings.merge_songs && settings.include_individual_download && canDownloadPerSong,
         export_song_id: settings.merge_songs ? null : activeSongId,
       });
       setJob(result.job_id);
@@ -1049,8 +1068,8 @@ export default function Step3() {
               style={{ border: "1px solid #CDD3CC", background: "#EEF2EC" }}
             >
               {[
-                { label: "모든 곡 함께", icon: <Layers size={12} />, merged: true },
-                { label: "곡별 따로", icon: <Monitor size={12} />, merged: false },
+                { label: "전체 슬라이드", icon: <Layers size={12} />, merged: true },
+                { label: "곡별 디자인", icon: <Monitor size={12} />, merged: false },
               ].map((opt) => {
                 const active = settings.merge_songs === opt.merged;
                 return (
@@ -1117,6 +1136,7 @@ export default function Step3() {
               canRestoreCurrentSlide={!!canRestoreCurrentSlide}
               onRestoreCurrentSlide={handleRestoreCurrentSlide}
               onShowTitleChange={handleShowTitleChange}
+              canDownloadPerSong={canDownloadPerSong}
             />
           </div>
         </div>
@@ -1161,8 +1181,8 @@ export default function Step3() {
               <p className="text-[11px] font-semibold uppercase tracking-widest mb-2.5" style={{ color: "#7D867F" }}>디자인 설정</p>
               <div className="flex rounded-2xl overflow-hidden p-1" style={{ border: "1px solid #CDD3CC", background: "#EEF2EC" }}>
                 {[
-                  { label: "모든 곡 함께", merged: true },
-                  { label: "곡별 따로", merged: false },
+                  { label: "전체 슬라이드", merged: true },
+                  { label: "곡별 디자인", merged: false },
                 ].map((opt) => {
                   const active = settings.merge_songs === opt.merged;
                   return (
@@ -1212,6 +1232,7 @@ export default function Step3() {
               canRestoreCurrentSlide={!!canRestoreCurrentSlide}
               onRestoreCurrentSlide={handleRestoreCurrentSlide}
               onShowTitleChange={handleShowTitleChange}
+              canDownloadPerSong={canDownloadPerSong}
             />
           </div>
         )}

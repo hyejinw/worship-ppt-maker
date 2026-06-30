@@ -66,6 +66,7 @@ export const api = {
     songs?: string[];
     songs_data?: { id: string; title: string; lyrics?: string | null; artist?: string | null; source?: string | null; settings?: object | null }[];
     merge_songs?: boolean;
+    include_individual_download?: boolean;
     export_song_id?: string | null;
   }) =>
     req<{ job_id: string }>("/api/ppt/generate", {

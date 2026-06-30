@@ -42,10 +42,11 @@ export function DoneContent({ jobId }: { jobId: string | null }) {
   const [downloading, setDownloading] = useState(false);
   const [pdfHovered, setPdfHovered] = useState(false);
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const isZipDownload = (!settings.merge_songs || settings.include_individual_download) && songs.length > 1;
 
   const getFileName = () => {
     const timestamp = formatTimestamp();
-    const ext = !settings.merge_songs && songs.length > 1 ? "zip" : "pptx";
+    const ext = isZipDownload ? "zip" : "pptx";
     return `${timestamp}-찬양.${ext}`;
   };
 
@@ -105,7 +106,7 @@ export function DoneContent({ jobId }: { jobId: string | null }) {
   const fontInfo = FONT_LINKS[settings.font_family];
   const isDone = jobStatus === "done" && downloadUrl;
   const isLoading = !isDone && jobStatus !== "failed";
-  const fileFormat = !settings.merge_songs && songs.length > 1 ? "ZIP" : "PPTX";
+  const fileFormat = isZipDownload ? "ZIP" : "PPTX";
 
   if (isDone || isLoading) {
     return (
